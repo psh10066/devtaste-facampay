@@ -7,6 +7,12 @@ import org.hibernate.annotations.Comment;
 
 @Comment("사용자")
 @Entity
+@Table(
+    name = "user",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "user_email_uk", columnNames = {"userEmail"})
+    }
+)
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -17,6 +23,10 @@ public class User extends DateColumn {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
+
+    @Comment("사용자 이메일")
+    @Column(nullable = false)
+    private String userEmail;
 
     @Comment("사용자 명")
     @Column(nullable = false)
