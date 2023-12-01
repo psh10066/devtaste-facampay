@@ -15,11 +15,12 @@ spring:
 logging: # 로깅
   level: # 로깅 레벨
     root: info # 로깅 레벨 설정
-    MySQL: warn # info시 hibernate와 중복 로깅되어 불필요
     org:
       springframework.orm.jpa.JpaTransactionManager: debug # jpa 트랜잭션 로깅
       hibernate:
         SQL: debug # 쿼리 출력 (jpa의 show_sql은 System.out에 출력하는 반면 org.hibernate.SQL은 logger에 출력함)
-        type.descriptor.sql:
-          BasicBinder: trace # 쿼리의 물음표 파라미터에 바인딩되는 값 확인
-#          BasicExtractor: trace # 쿼리 결과 확인
+        orm.jdbc:
+          bind: trace # 쿼리의 물음표 파라미터에 바인딩되는 값 확인
+#          extract: trace # 쿼리 결과 확인
+server:
+  port: 8081
