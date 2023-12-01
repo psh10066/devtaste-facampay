@@ -2,7 +2,6 @@ package com.devtaste.facampay.domain.service;
 
 import com.devtaste.facampay.domain.model.store.Store;
 import com.devtaste.facampay.domain.model.store.StoreRepository;
-import com.devtaste.facampay.domain.model.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +14,10 @@ import java.util.Optional;
 public class StoreService {
 
     private final StoreRepository storeRepository;
+
+    public Optional<Store> findById(Long storeId) {
+        return storeRepository.findById(storeId);
+    }
 
     public Optional<Store> findByStoreEmail(String storeEmail) {
         return storeRepository.findByStoreEmail(storeEmail);
