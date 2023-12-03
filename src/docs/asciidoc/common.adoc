@@ -1,0 +1,56 @@
+[[common]]
+== 공통 사항
+
+=== 도메인
+|===
+| 환경 | 도메인 주소
+
+| 개발서버
+| http://localhost:8081
+
+| 운영서버
+| -
+|===
+
+=== Method 규칙
+|===
+| GET | POST | PUT | DELETE
+
+| 조회
+| 생성, 확인
+| 수정
+| 삭제
+|===
+
+=== Result Code
+|===
+| Code | 메시지 | 설명
+
+| 200
+| 성공 알림 메시지
+| Api 호출 성공
+
+| 400
+| 오류 메시지
+| 잘못된 요청
+
+| 401
+| Unauthorized
+| 인증 실패
+
+| 405
+| Method Not Allowed
+| 허용되지 않는 방법
+
+| 417
+| {FieldName} is required
+| 유효성 검증 실패
+
+| 422
+| Already data
+| 이미 존재하는 데이터
+
+| 500
+| Unknown error
+| 알수없는 오류(서버 오류)
+|===
