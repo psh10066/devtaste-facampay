@@ -2,22 +2,17 @@ package com.devtaste.facampay.domain.service;
 
 import com.devtaste.facampay.domain.model.store.Store;
 import com.devtaste.facampay.domain.model.store.StoreRepository;
+import com.devtaste.facampay.infrastructure.helper.ServiceTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class StoreServiceTest {
+public class StoreServiceTest extends ServiceTest {
 
     @Autowired
     private StoreRepository storeRepository;

@@ -13,10 +13,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @Getter
-@DataJpaTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class PaymentTestHelper {
+public class PaymentTestHelper extends ServiceTest {
 
     @Autowired
     private StoreRepository storeRepository;
