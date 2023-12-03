@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/facampay-test
+    username: root
+    password: 12345678
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+
+logging: # 로깅
+  level: # 로깅 레벨
+    root: info # 로깅 레벨 설정
+    org:
+      springframework.orm.jpa.JpaTransactionManager: debug # jpa 트랜잭션 로깅
+      hibernate:
+#        SQL: debug # 테스트 시 자동으로 쿼리 로그 찍힘
+        orm.jdbc:
+          bind: trace # 쿼리의 물음표 파라미터에 바인딩되는 값 확인
+#          extract: trace # 쿼리 결과 확인
