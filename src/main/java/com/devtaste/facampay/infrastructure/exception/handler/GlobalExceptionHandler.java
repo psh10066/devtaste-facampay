@@ -35,11 +35,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public ErrorResponse BadRequestApiException(HttpServletRequest request, BadRequestApiException e) {
         log.info("error : ", e);
-        if (e.getMessage().isEmpty()) {
-            return ErrorResponse.of(HttpStatus.BAD_REQUEST, ResponseMessage.BAD_REQUEST_MSG);
-        } else {
-            return ErrorResponse.of(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        return ErrorResponse.of(HttpStatus.BAD_REQUEST, StringUtils.isNotBlank(e.getMessage()) ? e.getMessage() : HttpStatus.BAD_REQUEST.getReasonPhrase());
     }
 
     /**
@@ -50,7 +46,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public ErrorResponse UnauthorizedException(HttpServletRequest request, UnauthorizedException e) {
         log.info("error : ", e);
-        return ErrorResponse.of(HttpStatus.UNAUTHORIZED, StringUtils.isNotBlank(e.getMessage()) ? e.getMessage() : ResponseMessage.UNAUTHORIZED_MSG);
+        return ErrorResponse.of(HttpStatus.UNAUTHORIZED, StringUtils.isNotBlank(e.getMessage()) ? e.getMessage() : HttpStatus.UNAUTHORIZED.getReasonPhrase());
     }
 
     /**
@@ -61,7 +57,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ErrorResponse HttpRequestMethodNotSupportedException(HttpServletRequest request, HttpRequestMethodNotSupportedException e) {
         log.info("error : ", e);
-        return ErrorResponse.of(HttpStatus.METHOD_NOT_ALLOWED, ResponseMessage.METHOD_NOT_ALLOWED_MSG);
+        return ErrorResponse.of(HttpStatus.METHOD_NOT_ALLOWED, HttpStatus.METHOD_NOT_ALLOWED.getReasonPhrase());
     }
 
     /**
@@ -149,11 +145,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public ErrorResponse AlreadyDataException(HttpServletRequest request, AlreadyDataException e) {
         log.info("error : ", e);
-        if (e.getMessage().isEmpty()) {
-            return ErrorResponse.of(HttpStatus.UNPROCESSABLE_ENTITY, ResponseMessage.ALREADY_DATA_MSG);
-        } else {
-            return ErrorResponse.of(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
-        }
+        return ErrorResponse.of(HttpStatus.UNPROCESSABLE_ENTITY, StringUtils.isNotBlank(e.getMessage()) ? e.getMessage() : ResponseMessage.ALREADY_DATA_MSG);
     }
 
     /**
