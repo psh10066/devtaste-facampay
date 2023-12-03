@@ -3,7 +3,7 @@ spring:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/facampay
     username: root
-    password: 1234
+    password: 12345678
   jpa:
     hibernate:
       ddl-auto: create
