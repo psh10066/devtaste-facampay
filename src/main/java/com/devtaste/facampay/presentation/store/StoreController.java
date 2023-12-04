@@ -1,6 +1,6 @@
 package com.devtaste.facampay.presentation.store;
 
-import com.devtaste.facampay.application.payment.PaymentApplicationService;
+import com.devtaste.facampay.application.payment.PaymentService;
 import com.devtaste.facampay.presentation.common.response.SuccessResponse;
 import com.devtaste.facampay.presentation.store.request.PostPaymentRequest;
 import jakarta.validation.Valid;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/store")
 public class StoreController {
 
-    private final PaymentApplicationService paymentApplicationService;
+    private final PaymentService paymentApplicationService;
 
     @PostMapping(value = "/payment", name = "결제 요청")
     public SuccessResponse postPayment(@Valid @RequestBody PostPaymentRequest request) {

@@ -1,6 +1,6 @@
 package com.devtaste.facampay.presentation.store;
 
-import com.devtaste.facampay.application.payment.PaymentApplicationService;
+import com.devtaste.facampay.application.payment.PaymentService;
 import com.devtaste.facampay.presentation.common.ControllerTest;
 import com.devtaste.facampay.presentation.store.request.PostPaymentRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +35,7 @@ public class StoreControllerTest extends ControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private PaymentApplicationService paymentApplicationService;
+    private PaymentService paymentApplicationService;
 
     private MockMvc mockMvc;
 

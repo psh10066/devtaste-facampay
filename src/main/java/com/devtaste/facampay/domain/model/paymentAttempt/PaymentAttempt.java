@@ -4,7 +4,10 @@ import com.devtaste.facampay.domain.model.common.AuditingFields;
 import com.devtaste.facampay.domain.model.payment.Payment;
 import com.devtaste.facampay.domain.model.paymentAttempt.type.PaymentFailureType;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.Comment;
 
 import java.util.Objects;
@@ -13,9 +16,7 @@ import java.util.Objects;
 @Entity
 @ToString(callSuper = true)
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class PaymentAttempt extends AuditingFields {
 
     @Comment("결제 시도 고유번호")

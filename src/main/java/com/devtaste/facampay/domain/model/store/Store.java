@@ -1,9 +1,11 @@
 package com.devtaste.facampay.domain.model.store;
 
 import com.devtaste.facampay.domain.model.common.AuditingFields;
-import com.devtaste.facampay.domain.model.user.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.Comment;
 
 import java.util.Objects;
@@ -18,9 +20,7 @@ import java.util.Objects;
     }
 )
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class Store extends AuditingFields {
 
     @Comment("가맹점 고유번호")
@@ -39,6 +39,16 @@ public class Store extends AuditingFields {
     @Comment("잔고")
     @Column(nullable = false)
     private Long money;
+
+    private Store(String storeEmail, String storeName, Long money) {
+        this.storeEmail = storeEmail;
+        this.storeName = storeName;
+        this.money = money;
+    }
+
+    public static Store of(String storeEmail, String storeName, Long money) {
+        return new Store(storeEmail, storeName, money);
+    }
 
     @Override
     public boolean equals(Object o) {

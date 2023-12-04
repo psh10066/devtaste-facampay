@@ -1,6 +1,9 @@
 package com.devtaste.facampay.domain.model.user;
 
-import com.devtaste.facampay.infrastructure.dao.jpa.user.UserJpaRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends UserJpaRepository {
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUserEmail(String userEmail);
 }

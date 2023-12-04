@@ -6,7 +6,10 @@ import com.devtaste.facampay.domain.model.paymentAttempt.PaymentAttempt;
 import com.devtaste.facampay.domain.model.store.Store;
 import com.devtaste.facampay.domain.model.user.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.Comment;
 
 import java.util.List;
@@ -16,9 +19,7 @@ import java.util.Objects;
 @Entity
 @ToString(callSuper = true)
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 public class Payment extends AuditingFields {
 
     @Comment("결제 고유번호")
@@ -48,6 +49,17 @@ public class Payment extends AuditingFields {
     @ToString.Exclude
     @OneToMany(mappedBy = "payment")
     private List<PaymentAttempt> paymentAttemptList;
+
+    private Payment(Store store, User user, Long money, PaymentStatusType paymentStatus) {
+        this.store = store;
+        this.user = user;
+        this.money = money;
+        this.paymentStatus = paymentStatus;
+    }
+
+    public static Payment of(Store store, User user, Long money, PaymentStatusType paymentStatus) {
+        return new Payment(store, user, money, paymentStatus);
+    }
 
     @Override
     public boolean equals(Object o) {

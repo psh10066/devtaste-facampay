@@ -1,9 +1,9 @@
 package com.devtaste.facampay.infrastructure.config;
 
 import com.devtaste.facampay.domain.model.store.Store;
+import com.devtaste.facampay.domain.model.store.StoreRepository;
 import com.devtaste.facampay.domain.model.user.User;
-import com.devtaste.facampay.domain.service.StoreService;
-import com.devtaste.facampay.domain.service.UserService;
+import com.devtaste.facampay.domain.model.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -14,28 +14,20 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DBInit implements CommandLineRunner {
 
-    private final UserService userService;
-    private final StoreService storeService;
+    private final UserRepository userRepository;
+    private final StoreRepository storeRepository;
 
     @Override
     public void run(String... args) {
         String userEmail = "user@facam.com";
-        userService.findByUserEmail(userEmail).or(() -> {
-            User user = userService.save(User.builder()
-                .userEmail(userEmail)
-                .userName("사용자1")
-                .money(25000L)
-                .build());
+        userRepository.findByUserEmail(userEmail).or(() -> {
+            User user = userRepository.save(User.of(userEmail, "사용자1", 25000L));
             return Optional.of(user);
         });
 
         String storeEmail = "store@facam.com";
-        storeService.findByStoreEmail(storeEmail).or(() -> {
-            Store store = storeService.save(Store.builder()
-                .storeEmail(storeEmail)
-                .storeName("가맹점1")
-                .money(0L)
-                .build());
+        storeRepository.findByStoreEmail(storeEmail).or(() -> {
+            Store store = storeRepository.save(Store.of(storeEmail, "가맹점1", 0L));
             return Optional.of(store);
         });
     }

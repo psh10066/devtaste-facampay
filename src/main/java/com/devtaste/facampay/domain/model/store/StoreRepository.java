@@ -1,6 +1,9 @@
 package com.devtaste.facampay.domain.model.store;
 
-import com.devtaste.facampay.infrastructure.dao.jpa.store.StoreJpaRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface StoreRepository extends StoreJpaRepository {
+import java.util.Optional;
+
+public interface StoreRepository extends JpaRepository<Store, Long> {
+    Optional<Store> findByStoreEmail(String storeName);
 }

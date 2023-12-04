@@ -4,24 +4,16 @@ import com.devtaste.facampay.domain.model.store.Store;
 import com.devtaste.facampay.domain.model.store.StoreRepository;
 import com.devtaste.facampay.domain.model.user.User;
 import com.devtaste.facampay.domain.model.user.UserRepository;
-import com.devtaste.facampay.domain.service.StoreService;
-import com.devtaste.facampay.domain.service.UserService;
 import lombok.Getter;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @Getter
-public class PaymentTestHelper extends ServiceTest {
+public class PaymentTestHelper extends RepositoryTest {
 
     @Autowired
     private StoreRepository storeRepository;
     @Autowired
     private UserRepository userRepository;
-
-    private StoreService storeService;
-    private UserService userService;
 
     private Store store;
     private User user;
@@ -29,17 +21,7 @@ public class PaymentTestHelper extends ServiceTest {
     protected void preparePaymentTest() {
         this.storeRepository.deleteAllInBatch();
         this.userRepository.deleteAllInBatch();
-        this.storeService = new StoreService(storeRepository);
-        this.userService = new UserService(userRepository);
-        this.store = this.storeService.save(Store.builder()
-            .storeEmail("store@facam.com")
-            .storeName("가맹점1")
-            .money(0L)
-            .build());
-        this.user = this.userService.save(User.builder()
-            .userEmail("user@facam.com")
-            .userName("사용자1")
-            .money(25000L)
-            .build());
+        this.store = this.storeRepository.save(Store.of("store@facam.com", "가맹점1", 0L));
+        this.user = this.userRepository.save(User.of("user@facam.com", "사용자1", 25000L));
     }
 }

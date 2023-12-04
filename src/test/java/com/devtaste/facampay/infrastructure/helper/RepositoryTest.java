@@ -7,5 +7,5 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class ServiceTest {
+public class RepositoryTest {
 }
