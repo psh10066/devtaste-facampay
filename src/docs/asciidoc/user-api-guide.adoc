@@ -16,17 +16,17 @@ ifndef::snippets-custom[]
 :snippets-custom: ../../../src/docs/custom
 
 [[title]]
-= 패캠페이 API 문서
+= 패캠페이 사용자 API 문서
 
 include::common.adoc[]
 
-[[post-payment]]
-== 결제 요청
+[[post-payment-attempt]]
+== 결제 시도
 
 === Http
-include::{snippets}/store/payment/http-request.adoc[]
+include::{snippets}/user/payment/attempt/http-request.adoc[]
 === Request
-include::{snippets}/store/payment/request-fields.adoc[]
+include::{snippets}/user/payment/attempt/request-fields.adoc[]
 === Response
-include::{snippets}/store/payment/response-fields.adoc[]
-include::{snippets}/store/payment/response-body.adoc[]
+include::{snippets}/user/payment/attempt/response-fields.adoc[]
+include::{snippets}/user/payment/attempt/response-body.adoc[]

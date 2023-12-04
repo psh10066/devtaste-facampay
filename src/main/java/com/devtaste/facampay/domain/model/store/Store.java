@@ -50,6 +50,10 @@ public class Store extends AuditingFields {
         return new Store(storeEmail, storeName, money);
     }
 
+    public void changeMoney(long money) {
+        this.money += money;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

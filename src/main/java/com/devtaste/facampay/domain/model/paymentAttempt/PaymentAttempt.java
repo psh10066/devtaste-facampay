@@ -31,11 +31,21 @@ public class PaymentAttempt extends AuditingFields {
 
     @Comment("결제 성공 여부")
     @Column(nullable = false)
-    private Boolean paymentStatus;
+    private Boolean paymentSuccess;
 
     @Comment("결제 실패 사유")
     @Enumerated(EnumType.STRING)
     private PaymentFailureType paymentFailureType;
+
+    private PaymentAttempt(Payment payment, Boolean paymentSuccess, PaymentFailureType paymentFailureType) {
+        this.payment = payment;
+        this.paymentSuccess = paymentSuccess;
+        this.paymentFailureType = paymentFailureType;
+    }
+
+    public static PaymentAttempt of(Payment payment, Boolean paymentSuccess, PaymentFailureType paymentFailureType) {
+        return new PaymentAttempt(payment, paymentSuccess, paymentFailureType);
+    }
 
     @Override
     public boolean equals(Object o) {

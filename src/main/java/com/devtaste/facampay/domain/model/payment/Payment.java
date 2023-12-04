@@ -3,6 +3,7 @@ package com.devtaste.facampay.domain.model.payment;
 import com.devtaste.facampay.domain.model.common.AuditingFields;
 import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
 import com.devtaste.facampay.domain.model.paymentAttempt.PaymentAttempt;
+import com.devtaste.facampay.domain.model.paymentAttempt.type.PaymentFailureType;
 import com.devtaste.facampay.domain.model.store.Store;
 import com.devtaste.facampay.domain.model.user.User;
 import jakarta.persistence.*;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.Comment;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,7 +49,7 @@ public class Payment extends AuditingFields {
     private PaymentStatusType paymentStatus;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "payment")
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.PERSIST)
     private List<PaymentAttempt> paymentAttemptList;
 
     private Payment(Store store, User user, Long money, PaymentStatusType paymentStatus) {
@@ -59,6 +61,15 @@ public class Payment extends AuditingFields {
 
     public static Payment of(Store store, User user, Long money, PaymentStatusType paymentStatus) {
         return new Payment(store, user, money, paymentStatus);
+    }
+
+    public void addPaymentAttempt(PaymentFailureType paymentFailureType) {
+        boolean paymentSuccess = paymentFailureType == null;
+        this.paymentStatus = paymentSuccess ? PaymentStatusType.SUCCESS : PaymentStatusType.FAILURE;
+        if (this.paymentAttemptList == null) {
+            this.paymentAttemptList = new ArrayList<>();
+        }
+        this.paymentAttemptList.add(PaymentAttempt.of(this, paymentSuccess, paymentSuccess ? null : paymentFailureType));
     }
 
     @Override

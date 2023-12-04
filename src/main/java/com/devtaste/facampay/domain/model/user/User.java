@@ -50,6 +50,21 @@ public class User extends AuditingFields {
         return new User(userEmail, userName, money);
     }
 
+    private User(Long userId, String userEmail, String userName, Long money) {
+        this.userId = userId;
+        this.userEmail = userEmail;
+        this.userName = userName;
+        this.money = money;
+    }
+
+    public static User of(Long userId, String userEmail, String userName, Long money) {
+        return new User(userId, userEmail, userName, money);
+    }
+
+    public void changeMoney(long money) {
+        this.money += money;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

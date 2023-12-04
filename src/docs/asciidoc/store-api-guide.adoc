@@ -1,0 +1,32 @@
+ifndef::snippets[]
+:snippets: build/generated-snippets
+endif::[]
+ifndef::doc[]
+:doc: src/docs/asciidoc
+endif::[]
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+:operation-http-request-title: Example Request
+:operation-http-response-title: Example Response
+ifndef::snippets-custom[]
+:snippets-custom: ../../../src/docs/custom
+
+[[title]]
+= 패캠페이 가맹점 API 문서
+
+include::common.adoc[]
+
+[[post-payment]]
+== 결제 요청
+
+=== Http
+include::{snippets}/store/payment/http-request.adoc[]
+=== Request
+include::{snippets}/store/payment/request-fields.adoc[]
+=== Response
+include::{snippets}/store/payment/response-fields.adoc[]
+include::{snippets}/store/payment/response-body.adoc[]
