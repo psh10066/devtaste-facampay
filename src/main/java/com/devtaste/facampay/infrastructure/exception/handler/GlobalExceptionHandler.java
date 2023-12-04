@@ -2,6 +2,7 @@ package com.devtaste.facampay.infrastructure.exception.handler;
 
 import com.devtaste.facampay.infrastructure.exception.AlreadyDataException;
 import com.devtaste.facampay.infrastructure.exception.BadRequestApiException;
+import com.devtaste.facampay.infrastructure.exception.NotFoundDataException;
 import com.devtaste.facampay.infrastructure.exception.UnauthorizedException;
 import com.devtaste.facampay.infrastructure.exception.message.ResponseMessage;
 import com.devtaste.facampay.infrastructure.exception.response.ErrorResponse;
@@ -69,6 +70,17 @@ public class GlobalExceptionHandler {
     public ErrorResponse HttpMessageNotReadableException(HttpServletRequest request, HttpMessageNotReadableException e) {
         log.info("error : ", e);
         return ErrorResponse.of(HttpStatus.METHOD_NOT_ALLOWED, ResponseMessage.HTTP_MESSAGE_NOT_READABLE_MSG.replace("{msg}", Objects.requireNonNull(e.getMessage())));
+    }
+
+    /**
+     * 데이터 조회 실패 (데이터 조회 실패로 인한 처리 불가, 저장/수정/삭제 실패)
+     * HttpStatus 416
+     */
+    @ExceptionHandler(NotFoundDataException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public ErrorResponse NotFoundDataException(HttpServletRequest request, NotFoundDataException e) {
+        log.info("error : ", e);
+        return ErrorResponse.of(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, e.getMessage());
     }
 
     /**
