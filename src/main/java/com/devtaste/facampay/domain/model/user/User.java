@@ -1,12 +1,15 @@
 package com.devtaste.facampay.domain.model.user;
 
-import com.devtaste.facampay.domain.model.common.DateColumn;
+import com.devtaste.facampay.domain.model.common.AuditingFields;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
+import java.util.Objects;
+
 @Comment("사용자")
 @Entity
+@ToString(callSuper = true)
 @Table(
     name = "user",
     uniqueConstraints = {
@@ -17,7 +20,7 @@ import org.hibernate.annotations.Comment;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class User extends DateColumn {
+public class User extends AuditingFields {
 
     @Comment("사용자 고유번호")
     @Id
@@ -35,4 +38,16 @@ public class User extends DateColumn {
     @Comment("잔고")
     @Column(nullable = false)
     private Long money;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User that)) return false;
+        return this.getUserId() != null && this.getUserId().equals(that.getUserId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getUserId());
+    }
 }

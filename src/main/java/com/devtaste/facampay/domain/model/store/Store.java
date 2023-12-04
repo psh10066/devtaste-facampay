@@ -1,12 +1,16 @@
 package com.devtaste.facampay.domain.model.store;
 
-import com.devtaste.facampay.domain.model.common.DateColumn;
+import com.devtaste.facampay.domain.model.common.AuditingFields;
+import com.devtaste.facampay.domain.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
+import java.util.Objects;
+
 @Comment("가맹점")
 @Entity
+@ToString(callSuper = true)
 @Table(
     name = "store",
     uniqueConstraints = {
@@ -17,7 +21,7 @@ import org.hibernate.annotations.Comment;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Store extends DateColumn {
+public class Store extends AuditingFields {
 
     @Comment("가맹점 고유번호")
     @Id
@@ -35,4 +39,16 @@ public class Store extends DateColumn {
     @Comment("잔고")
     @Column(nullable = false)
     private Long money;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Store that)) return false;
+        return this.getStoreId() != null && this.getStoreId().equals(that.getStoreId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getStoreId());
+    }
 }

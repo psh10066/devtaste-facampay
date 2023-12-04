@@ -1,23 +1,25 @@
 package com.devtaste.facampay.domain.model.payment;
 
-import com.devtaste.facampay.domain.model.store.Store;
-import com.devtaste.facampay.domain.model.user.User;
-import com.devtaste.facampay.domain.model.common.DateColumn;
+import com.devtaste.facampay.domain.model.common.AuditingFields;
 import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
 import com.devtaste.facampay.domain.model.paymentAttempt.PaymentAttempt;
+import com.devtaste.facampay.domain.model.store.Store;
+import com.devtaste.facampay.domain.model.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
 import java.util.List;
+import java.util.Objects;
 
 @Comment("결제")
 @Entity
+@ToString(callSuper = true)
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Payment extends DateColumn {
+public class Payment extends AuditingFields {
 
     @Comment("결제 고유번호")
     @Id
@@ -25,12 +27,12 @@ public class Payment extends DateColumn {
     private Long paymentId;
 
     @Comment("가맹점 고유번호")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "storeId", foreignKey = @ForeignKey(name = "payment_store_fk"), updatable = false)
     private Store store;
 
     @Comment("사용자 고유번호")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "userId", foreignKey = @ForeignKey(name = "payment_user_fk"), updatable = false)
     private User user;
 
@@ -43,6 +45,19 @@ public class Payment extends DateColumn {
     @Enumerated(EnumType.STRING)
     private PaymentStatusType paymentStatus;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "payment")
     private List<PaymentAttempt> paymentAttemptList;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Payment that)) return false;
+        return this.getPaymentId() != null && this.getPaymentId().equals(that.getPaymentId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getPaymentId());
+    }
 }
