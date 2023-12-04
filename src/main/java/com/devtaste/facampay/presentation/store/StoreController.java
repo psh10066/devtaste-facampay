@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/store")
 public class StoreController {
 
-    private final PaymentService paymentApplicationService;
+    private final PaymentService paymentService;
 
     @PostMapping(value = "/payment", name = "결제 요청")
     public SuccessResponse postPayment(@Valid @RequestBody PostPaymentRequest request) {
-        paymentApplicationService.postPayment(request);
+        paymentService.postPayment(request);
         return new SuccessResponse("결제가 정상적으로 요청되었습니다.");
     }
 }

@@ -35,7 +35,7 @@ public class StoreControllerTest extends ControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private PaymentService paymentApplicationService;
+    private PaymentService paymentService;
 
     private MockMvc mockMvc;
 
@@ -49,7 +49,7 @@ public class StoreControllerTest extends ControllerTest {
     @DisplayName("결제 요청")
     @Test
     void postPayment() throws Exception {
-        doNothing().when(paymentApplicationService).postPayment(any(PostPaymentRequest.class));
+        doNothing().when(paymentService).postPayment(any(PostPaymentRequest.class));
 
         PostPaymentRequest request = new PostPaymentRequest(1L, 2L, 10000L);
 
