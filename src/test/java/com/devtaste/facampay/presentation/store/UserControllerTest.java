@@ -1,6 +1,8 @@
 package com.devtaste.facampay.presentation.store;
 
 import com.devtaste.facampay.application.payment.PaymentService;
+import com.devtaste.facampay.application.payment.dto.PaymentDTO;
+import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
 import com.devtaste.facampay.presentation.common.ControllerTest;
 import com.devtaste.facampay.presentation.user.PostPaymentAttemptRequest;
 import com.devtaste.facampay.presentation.user.UserController;
@@ -20,13 +22,23 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.devtaste.facampay.presentation.common.ApiDocumentUtils.getDocumentRequest;
 import static com.devtaste.facampay.presentation.common.ApiDocumentUtils.getDocumentResponse;
+import static com.devtaste.facampay.presentation.common.DocumentAttributeGenerator.dateTimeFormat;
+import static com.devtaste.facampay.presentation.common.DocumentAttributeGenerator.paymentStatusFormat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
@@ -45,6 +57,44 @@ public class UserControllerTest extends ControllerTest {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
             .apply(documentationConfiguration(restDocumentation))
             .build();
+    }
+
+    @DisplayName("결제 목록 조회")
+    @Test
+    void getPaymentList() throws Exception {
+        given(paymentService.getPaymentList(any(Long.class))).willReturn(List.of(
+            PaymentDTO.of(2L, "가맹점2", 5000L, PaymentStatusType.SUCCESS, LocalDateTime.of(2023, 12, 4, 18, 12, 3, 654321)),
+            PaymentDTO.of(1L, "가맹점1", 10000L, PaymentStatusType.WAITING, LocalDateTime.of(2023, 12, 3, 21, 47, 8, 123456))
+        ));
+
+        // when
+        ResultActions resultActions = mockMvc.perform(
+            RestDocumentationRequestBuilders.get("/user/payment/list/{userId}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+        );
+
+        // then
+        resultActions.andExpect(status().isOk())
+            .andExpect(jsonPath("rt").value(200))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andDo(document("user/payment/list",
+                getDocumentRequest(),
+                getDocumentResponse(),
+                pathParameters(
+                    parameterWithName("userId").description("사용자 고유번호")
+                ),
+                responseFields(
+                    fieldWithPath("rt").type(JsonFieldType.NUMBER).description("결과 코드"),
+                    fieldWithPath("rtMsg").type(JsonFieldType.STRING).description("결과 메세지"),
+                    fieldWithPath("response").type(JsonFieldType.OBJECT).description("결과 데이터"),
+                    fieldWithPath("response.paymentList").type(JsonFieldType.ARRAY).description("결과 데이터"),
+                    fieldWithPath("response.paymentList[].paymentId").type(JsonFieldType.NUMBER).description("결제 고유번호"),
+                    fieldWithPath("response.paymentList[].storeName").type(JsonFieldType.STRING).description("가맹점 명"),
+                    fieldWithPath("response.paymentList[].money").type(JsonFieldType.NUMBER).description("결제 금액"),
+                    fieldWithPath("response.paymentList[].paymentStatus").type(JsonFieldType.STRING).attributes(paymentStatusFormat()).description("결제 상태"),
+                    fieldWithPath("response.paymentList[].createdAt").type(JsonFieldType.STRING).attributes(dateTimeFormat()).description("결제 생성 시각")
+                )
+            ));
     }
 
     @DisplayName("결제 시도")

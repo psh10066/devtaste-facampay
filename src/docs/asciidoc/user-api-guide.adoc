@@ -20,6 +20,17 @@ ifndef::snippets-custom[]
 
 include::common.adoc[]
 
+[[get-payment-list]]
+== 결제 목록 조회
+
+=== Http
+include::{snippets}/user/payment/list/http-request.adoc[]
+=== Request
+include::{snippets}/user/payment/list/path-parameters.adoc[]
+=== Response
+include::{snippets}/user/payment/list/response-fields.adoc[]
+include::{snippets}/user/payment/list/response-body.adoc[]
+
 [[post-payment-attempt]]
 == 결제 시도
 

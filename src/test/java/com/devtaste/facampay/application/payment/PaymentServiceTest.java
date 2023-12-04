@@ -1,5 +1,6 @@
 package com.devtaste.facampay.application.payment;
 
+import com.devtaste.facampay.application.payment.dto.PaymentDTO;
 import com.devtaste.facampay.application.payment.event.PaymentAttemptEvent;
 import com.devtaste.facampay.domain.model.payment.Payment;
 import com.devtaste.facampay.domain.model.payment.PaymentRepository;
@@ -20,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,6 +59,31 @@ public class PaymentServiceTest {
         then(storeRepository).should().findById(request.getStoreId());
         then(userRepository).should().findById(request.getUserId());
         then(paymentRepository).should().save(any(Payment.class));
+    }
+
+    @DisplayName("결제 목록 조회")
+    @Test
+    void getPaymentList() {
+        long userId = 1L;
+        Optional<User> user = Optional.of(User.of(userId, "user@facam.com", "사용자1", 25000L));
+        given(userRepository.findById(userId)).willReturn(user);
+        given(paymentRepository.findByUserOrderByCreatedAtDesc(user.get())).willReturn(List.of(
+            Payment.of(1L, Store.of("store1@facam.com", "가맹점1", 0L), user.get(), 10000L, PaymentStatusType.WAITING),
+            Payment.of(2L, Store.of("store2@facam.com", "가맹점2", 0L), user.get(), 5000L, PaymentStatusType.SUCCESS)
+        ));
+
+        List<PaymentDTO> paymentList = paymentService.getPaymentList(userId);
+
+        assertEquals(paymentList.get(0).paymentId(), 1L);
+        assertEquals(paymentList.get(0).storeName(), "가맹점1");
+        assertEquals(paymentList.get(0).money(), 10000L);
+        assertEquals(paymentList.get(0).paymentStatus(), PaymentStatusType.WAITING);
+        assertEquals(paymentList.get(1).paymentId(), 2L);
+        assertEquals(paymentList.get(1).storeName(), "가맹점2");
+        assertEquals(paymentList.get(1).money(), 5000L);
+        assertEquals(paymentList.get(1).paymentStatus(), PaymentStatusType.SUCCESS);
+        then(userRepository).should().findById(userId);
+        then(paymentRepository).should().findByUserOrderByCreatedAtDesc(user.get());
     }
 
     @DisplayName("결제 시도 - 성공")

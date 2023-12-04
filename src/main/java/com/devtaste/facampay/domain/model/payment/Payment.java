@@ -63,6 +63,18 @@ public class Payment extends AuditingFields {
         return new Payment(store, user, money, paymentStatus);
     }
 
+    private Payment(Long paymentId, Store store, User user, Long money, PaymentStatusType paymentStatus) {
+        this.paymentId = paymentId;
+        this.store = store;
+        this.user = user;
+        this.money = money;
+        this.paymentStatus = paymentStatus;
+    }
+
+    public static Payment of(Long paymentId, Store store, User user, Long money, PaymentStatusType paymentStatus) {
+        return new Payment(paymentId, store, user, money, paymentStatus);
+    }
+
     public void addPaymentAttempt(PaymentFailureType paymentFailureType) {
         boolean paymentSuccess = paymentFailureType == null;
         this.paymentStatus = paymentSuccess ? PaymentStatusType.SUCCESS : PaymentStatusType.FAILURE;

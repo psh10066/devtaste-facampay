@@ -1,9 +1,10 @@
 package com.devtaste.facampay.domain.model.payment;
 
+import com.devtaste.facampay.domain.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import java.util.List;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    Optional<Payment> findFirstByStoreStoreIdAndUserUserIdOrderByPaymentIdDesc(Long storeId, Long userId);
+    List<Payment> findByUserOrderByCreatedAtDesc(User user);
 }

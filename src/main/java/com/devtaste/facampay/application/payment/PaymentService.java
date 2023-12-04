@@ -1,5 +1,6 @@
 package com.devtaste.facampay.application.payment;
 
+import com.devtaste.facampay.application.payment.dto.PaymentDTO;
 import com.devtaste.facampay.application.payment.event.PaymentAttemptEvent;
 import com.devtaste.facampay.domain.model.payment.Payment;
 import com.devtaste.facampay.domain.model.payment.PaymentRepository;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -40,6 +43,16 @@ public class PaymentService {
         User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new NotFoundDataException("존재하지 않는 사용자입니다."));
 
         paymentRepository.save(Payment.of(store, user, request.getMoney(), PaymentStatusType.WAITING));
+    }
+
+    /**
+     * 결제 목록 조회
+     */
+    public List<PaymentDTO> getPaymentList(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundDataException("존재하지 않는 사용자입니다."));
+        return paymentRepository.findByUserOrderByCreatedAtDesc(user).stream()
+            .map(PaymentDTO::from)
+            .toList();
     }
 
     /**
