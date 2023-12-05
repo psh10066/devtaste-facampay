@@ -15,7 +15,7 @@ public class DocumentAttributeGenerator {
     }
 
     public static Attributes.Attribute dateTimeFormat() {
-        return setFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        return setFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
     }
 
     public static Attributes.Attribute paymentStatusFormat() {
