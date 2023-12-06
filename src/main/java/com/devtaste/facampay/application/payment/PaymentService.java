@@ -41,6 +41,9 @@ public class PaymentService {
      */
     public void postPayment(PostPaymentRequest request) {
         StoreToUser storeToUser = storeToUserRepository.findByStore_StoreIdAndUser_UserId(request.getStoreId(), request.getUserId()).orElseThrow(() -> new NotFoundDataException("가입되지 않은 사용자입니다."));
+        if (!paymentRepository.findByStore_StoreIdAndUser_UserIdAndPaymentStatus(request.getStoreId(), request.getUserId(), PaymentStatusType.WAITING).isEmpty()) {
+            throw new BadRequestApiException("해당 사용자에게 대기중인 결제 요청이 존재합니다.");
+        }
 
         paymentRepository.save(Payment.of(storeToUser.getStore(), storeToUser.getUser(), request.getMoney(), PaymentStatusType.WAITING));
     }

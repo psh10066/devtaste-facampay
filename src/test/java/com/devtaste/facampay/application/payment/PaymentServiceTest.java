@@ -13,6 +13,7 @@ import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.domain.model.user.User;
 import com.devtaste.facampay.domain.model.user.UserRepository;
 import com.devtaste.facampay.infrastructure.exception.BadRequestApiException;
+import com.devtaste.facampay.infrastructure.exception.NotFoundDataException;
 import com.devtaste.facampay.presentation.store.request.PostPaymentRequest;
 import com.devtaste.facampay.presentation.user.request.PostPaymentAttemptRequest;
 import org.junit.jupiter.api.DisplayName;
@@ -46,20 +47,53 @@ public class PaymentServiceTest {
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
-    @DisplayName("결제 요청")
+    @DisplayName("결제 요청 - 성공")
     @Test
-    void postPayment() {
+    void postPayment_success() {
         PostPaymentRequest request = new PostPaymentRequest(1L, 2L, 10000L);
         Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", 0L));
         Optional<User> user = Optional.of(User.of("user@facam.com", "사용자1", 25000L));
 
         given(storeToUserRepository.findByStore_StoreIdAndUser_UserId(request.getStoreId(), request.getUserId())).willReturn(Optional.of(StoreToUser.of(store.get(), user.get())));
+        given(paymentRepository.findByStore_StoreIdAndUser_UserIdAndPaymentStatus(request.getStoreId(), request.getUserId(), PaymentStatusType.WAITING)).willReturn(List.of());
         given(paymentRepository.save(any(Payment.class))).willReturn(Payment.of(store.get(), user.get(), request.getMoney(), PaymentStatusType.WAITING));
 
         paymentService.postPayment(request);
 
         then(storeToUserRepository).should().findByStore_StoreIdAndUser_UserId(request.getStoreId(), request.getUserId());
+        then(paymentRepository).should().findByStore_StoreIdAndUser_UserIdAndPaymentStatus(request.getStoreId(), request.getUserId(), PaymentStatusType.WAITING);
         then(paymentRepository).should().save(any(Payment.class));
+    }
+
+    @DisplayName("결제 요청 - 등록된 회원에 한해 결제 요청을 보낼 수 있음")
+    @Test
+    void postPayment_onlyRegisteredUser() {
+        PostPaymentRequest request = new PostPaymentRequest(1L, 2L, 10000L);
+
+        given(storeToUserRepository.findByStore_StoreIdAndUser_UserId(request.getStoreId(), request.getUserId())).willReturn(Optional.empty());
+
+        assertThrows(NotFoundDataException.class, () -> paymentService.postPayment(request));
+
+        then(storeToUserRepository).should().findByStore_StoreIdAndUser_UserId(request.getStoreId(), request.getUserId());
+        then(paymentRepository).should(never()).findByStore_StoreIdAndUser_UserIdAndPaymentStatus(anyLong(), anyLong(), any(PaymentStatusType.class));
+        then(paymentRepository).should(never()).save(any(Payment.class));
+    }
+
+    @DisplayName("결제 요청 - 대기 건은 하나만 존재할 수 있음")
+    @Test
+    void postPayment_onlyOnePaymentWaiting() {
+        PostPaymentRequest request = new PostPaymentRequest(1L, 2L, 10000L);
+        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", 0L));
+        Optional<User> user = Optional.of(User.of("user@facam.com", "사용자1", 25000L));
+
+        given(storeToUserRepository.findByStore_StoreIdAndUser_UserId(request.getStoreId(), request.getUserId())).willReturn(Optional.of(StoreToUser.of(store.get(), user.get())));
+        given(paymentRepository.findByStore_StoreIdAndUser_UserIdAndPaymentStatus(request.getStoreId(), request.getUserId(), PaymentStatusType.WAITING)).willReturn(List.of(Payment.of(store.get(), user.get(), request.getMoney(), PaymentStatusType.WAITING)));
+
+        assertThrows(BadRequestApiException.class, () -> paymentService.postPayment(request));
+
+        then(storeToUserRepository).should().findByStore_StoreIdAndUser_UserId(request.getStoreId(), request.getUserId());
+        then(paymentRepository).should().findByStore_StoreIdAndUser_UserIdAndPaymentStatus(request.getStoreId(), request.getUserId(), PaymentStatusType.WAITING);
+        then(paymentRepository).should(never()).save(any(Payment.class));
     }
 
     @DisplayName("결제 목록 조회")
