@@ -3,6 +3,8 @@ package com.devtaste.facampay.domain.model.payment;
 import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
 import com.devtaste.facampay.domain.model.store.Store;
 import com.devtaste.facampay.domain.model.store.StoreRepository;
+import com.devtaste.facampay.domain.model.storeToUser.StoreToUser;
+import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.domain.model.user.User;
 import com.devtaste.facampay.domain.model.user.UserRepository;
 import com.devtaste.facampay.infrastructure.helper.RepositoryTest;
@@ -22,12 +24,15 @@ public class PaymentRepositoryTest extends RepositoryTest {
     private StoreRepository storeRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private StoreToUserRepository storeToUserRepository;
 
     private Store store;
     private User user;
 
     @BeforeAll
     void before() {
+        this.storeToUserRepository.deleteAllInBatch();
         this.storeRepository.deleteAllInBatch();
         this.userRepository.deleteAllInBatch();
         this.store = this.storeRepository.save(Store.of("store@facam.com", "가맹점1", 0L));

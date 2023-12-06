@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByUserOrderByCreatedAtDesc(User user);
+
+    List<Payment> findByStore_StoreIdAndUser_UserIdOrderByCreatedAtDesc(Long userId, Long storeId);
 }

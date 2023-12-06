@@ -1,5 +1,6 @@
 package com.devtaste.facampay.domain.model.user;
 
+import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.infrastructure.helper.RepositoryTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -14,11 +15,14 @@ public class UserRepositoryTest extends RepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private StoreToUserRepository storeToUserRepository;
 
     private User user;
 
     @BeforeAll
     void before() {
+        this.storeToUserRepository.deleteAllInBatch();
         this.userRepository.deleteAllInBatch();
         this.user = this.userRepository.save(User.of("user@facam.com", "사용자1", 0L));
     }

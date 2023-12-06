@@ -1,12 +1,12 @@
 package com.devtaste.facampay.presentation.user.response;
 
-import com.devtaste.facampay.application.payment.dto.PaymentDTO;
+import com.devtaste.facampay.application.payment.dto.PaymentStoreDTO;
 
 import java.util.List;
 
-public record PaymentListResponse(List<PaymentDTO> paymentList) {
+public record PaymentListResponse(List<PaymentStoreDTO> paymentList) {
 
-    public static PaymentListResponse of(List<PaymentDTO> paymentList) {
+    public static PaymentListResponse of(List<PaymentStoreDTO> paymentList) {
         return new PaymentListResponse(paymentList);
     }
 }

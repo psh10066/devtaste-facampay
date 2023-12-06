@@ -1,6 +1,6 @@
 package com.devtaste.facampay.application.payment.event;
 
-import com.devtaste.facampay.domain.model.paymentAttempt.type.PaymentFailureType;
+import com.devtaste.facampay.domain.model.payment.type.PaymentFailureType;
 
 public record PaymentAttemptEvent(Long paymentId, PaymentFailureType paymentFailureType) {
 

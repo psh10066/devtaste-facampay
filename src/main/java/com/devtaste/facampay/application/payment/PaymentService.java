@@ -1,19 +1,20 @@
 package com.devtaste.facampay.application.payment;
 
-import com.devtaste.facampay.application.payment.dto.PaymentDTO;
+import com.devtaste.facampay.application.payment.dto.PaymentStoreDTO;
 import com.devtaste.facampay.application.payment.event.PaymentAttemptEvent;
 import com.devtaste.facampay.domain.model.payment.Payment;
 import com.devtaste.facampay.domain.model.payment.PaymentRepository;
+import com.devtaste.facampay.domain.model.payment.type.PaymentFailureType;
 import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
-import com.devtaste.facampay.domain.model.paymentAttempt.type.PaymentFailureType;
 import com.devtaste.facampay.domain.model.store.Store;
-import com.devtaste.facampay.domain.model.store.StoreRepository;
+import com.devtaste.facampay.domain.model.storeToUser.StoreToUser;
+import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.domain.model.user.User;
 import com.devtaste.facampay.domain.model.user.UserRepository;
 import com.devtaste.facampay.infrastructure.exception.BadRequestApiException;
 import com.devtaste.facampay.infrastructure.exception.NotFoundDataException;
 import com.devtaste.facampay.presentation.store.request.PostPaymentRequest;
-import com.devtaste.facampay.presentation.user.PostPaymentAttemptRequest;
+import com.devtaste.facampay.presentation.user.request.PostPaymentAttemptRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -29,9 +30,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
+    private final StoreToUserRepository storeToUserRepository;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -39,19 +40,18 @@ public class PaymentService {
      * 결제 요청
      */
     public void postPayment(PostPaymentRequest request) {
-        Store store = storeRepository.findById(request.getStoreId()).orElseThrow(() -> new NotFoundDataException("존재하지 않는 가맹점입니다."));
-        User user = userRepository.findById(request.getUserId()).orElseThrow(() -> new NotFoundDataException("존재하지 않는 사용자입니다."));
+        StoreToUser storeToUser = storeToUserRepository.findByStore_StoreIdAndUser_UserId(request.getStoreId(), request.getUserId()).orElseThrow(() -> new NotFoundDataException("가입되지 않은 사용자입니다."));
 
-        paymentRepository.save(Payment.of(store, user, request.getMoney(), PaymentStatusType.WAITING));
+        paymentRepository.save(Payment.of(storeToUser.getStore(), storeToUser.getUser(), request.getMoney(), PaymentStatusType.WAITING));
     }
 
     /**
      * 결제 목록 조회
      */
-    public List<PaymentDTO> getPaymentList(Long userId) {
+    public List<PaymentStoreDTO> getPaymentList(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundDataException("존재하지 않는 사용자입니다."));
         return paymentRepository.findByUserOrderByCreatedAtDesc(user).stream()
-            .map(PaymentDTO::from)
+            .map(PaymentStoreDTO::from)
             .toList();
     }
 
@@ -81,8 +81,20 @@ public class PaymentService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
-    public void addPaymentAttemptEvent(PaymentAttemptEvent event) {
+    public void doPaymentAttemptEvent(PaymentAttemptEvent event) {
         Payment payment = paymentRepository.getReferenceById(event.paymentId());
-        payment.addPaymentAttempt(event.paymentFailureType());
+        payment.doPaymentAttempt(event.paymentFailureType());
+    }
+
+    /**
+     * 결제 취소
+     */
+    public void cancelPayment(Long storeId, Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId).orElseThrow(() -> new NotFoundDataException("존재하지 않는 결제 정보입니다."));
+        if (!payment.getStore().getStoreId().equals(storeId)) throw new BadRequestApiException("잘못된 요청입니다.");
+
+        if (!payment.getPaymentStatus().equals(PaymentStatusType.WAITING)) throw new BadRequestApiException("대기중인 결제만 취소할 수 있습니다.");
+
+        payment.cancelPayment();
     }
 }

@@ -26,6 +26,7 @@ include::common.adoc[]
 === Http
 include::{snippets}/user/payment/list/http-request.adoc[]
 === Request
+==== Path Parameters
 include::{snippets}/user/payment/list/path-parameters.adoc[]
 === Response
 include::{snippets}/user/payment/list/response-fields.adoc[]
@@ -37,6 +38,7 @@ include::{snippets}/user/payment/list/response-body.adoc[]
 === Http
 include::{snippets}/user/payment/attempt/http-request.adoc[]
 === Request
+==== Request Fields
 include::{snippets}/user/payment/attempt/request-fields.adoc[]
 === Response
 include::{snippets}/user/payment/attempt/response-fields.adoc[]

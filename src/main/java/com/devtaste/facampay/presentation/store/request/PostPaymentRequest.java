@@ -3,12 +3,14 @@ package com.devtaste.facampay.presentation.store.request;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 public class PostPaymentRequest {
 
     @NotNull(message = "가맹점 정보가 누락되었습니다.")

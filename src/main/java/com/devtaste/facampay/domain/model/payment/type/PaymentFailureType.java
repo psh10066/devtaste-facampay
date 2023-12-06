@@ -1,4 +1,4 @@
-package com.devtaste.facampay.domain.model.paymentAttempt.type;
+package com.devtaste.facampay.domain.model.payment.type;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

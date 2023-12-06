@@ -5,13 +5,13 @@ import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
 
 import java.time.LocalDateTime;
 
-public record PaymentDTO(Long paymentId, String storeName, Long money, PaymentStatusType paymentStatus, LocalDateTime createdAt) {
+public record PaymentDTO(Long paymentId, Long money, PaymentStatusType paymentStatus, LocalDateTime createdAt) {
 
     public static PaymentDTO from(Payment payment) {
-        return new PaymentDTO(payment.getPaymentId(), payment.getStore().getStoreName(), payment.getMoney(), payment.getPaymentStatus(), payment.getCreatedAt());
+        return new PaymentDTO(payment.getPaymentId(), payment.getMoney(), payment.getPaymentStatus(), payment.getCreatedAt());
     }
 
-    public static PaymentDTO of(Long paymentId, String storeName, Long money, PaymentStatusType paymentStatus, LocalDateTime createdAt) {
-        return new PaymentDTO(paymentId, storeName, money, paymentStatus, createdAt);
+    public static PaymentDTO of(Long paymentId, Long money, PaymentStatusType paymentStatus, LocalDateTime createdAt) {
+        return new PaymentDTO(paymentId, money, paymentStatus, createdAt);
     }
 }

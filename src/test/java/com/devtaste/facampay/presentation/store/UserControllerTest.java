@@ -1,11 +1,11 @@
 package com.devtaste.facampay.presentation.store;
 
 import com.devtaste.facampay.application.payment.PaymentService;
-import com.devtaste.facampay.application.payment.dto.PaymentDTO;
+import com.devtaste.facampay.application.payment.dto.PaymentStoreDTO;
 import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
 import com.devtaste.facampay.presentation.common.ControllerTest;
-import com.devtaste.facampay.presentation.user.PostPaymentAttemptRequest;
 import com.devtaste.facampay.presentation.user.UserController;
+import com.devtaste.facampay.presentation.user.request.PostPaymentAttemptRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,9 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.devtaste.facampay.presentation.common.ApiDocumentUtils.getDocumentRequest;
 import static com.devtaste.facampay.presentation.common.ApiDocumentUtils.getDocumentResponse;
@@ -33,6 +31,7 @@ import static com.devtaste.facampay.presentation.common.DocumentAttributeGenerat
 import static com.devtaste.facampay.presentation.common.DocumentAttributeGenerator.paymentStatusFormat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -62,14 +61,15 @@ public class UserControllerTest extends ControllerTest {
     @DisplayName("결제 목록 조회")
     @Test
     void getPaymentList() throws Exception {
+        long userId = 1;
         given(paymentService.getPaymentList(any(Long.class))).willReturn(List.of(
-            PaymentDTO.of(2L, "가맹점2", 5000L, PaymentStatusType.SUCCESS, LocalDateTime.of(2023, 12, 4, 18, 12, 3, 654321)),
-            PaymentDTO.of(1L, "가맹점1", 10000L, PaymentStatusType.WAITING, LocalDateTime.of(2023, 12, 3, 21, 47, 8, 123456))
+            PaymentStoreDTO.of(2L, "가맹점2", 5000L, PaymentStatusType.SUCCESS, LocalDateTime.of(2023, 12, 4, 18, 12, 3, 654321)),
+            PaymentStoreDTO.of(1L, "가맹점1", 10000L, PaymentStatusType.WAITING, LocalDateTime.of(2023, 12, 3, 21, 47, 8, 123456))
         ));
 
         // when
         ResultActions resultActions = mockMvc.perform(
-            RestDocumentationRequestBuilders.get("/user/payment/list/{userId}", 1L)
+            RestDocumentationRequestBuilders.get("/user/payment/list/{userId}", userId)
                 .contentType(MediaType.APPLICATION_JSON)
         );
 
@@ -87,7 +87,7 @@ public class UserControllerTest extends ControllerTest {
                     fieldWithPath("rt").type(JsonFieldType.NUMBER).description("결과 코드"),
                     fieldWithPath("rtMsg").type(JsonFieldType.STRING).description("결과 메세지"),
                     fieldWithPath("response").type(JsonFieldType.OBJECT).description("결과 데이터"),
-                    fieldWithPath("response.paymentList").type(JsonFieldType.ARRAY).description("결과 데이터"),
+                    fieldWithPath("response.paymentList").type(JsonFieldType.ARRAY).description("결제 목록"),
                     fieldWithPath("response.paymentList[].paymentId").type(JsonFieldType.NUMBER).description("결제 고유번호"),
                     fieldWithPath("response.paymentList[].storeName").type(JsonFieldType.STRING).description("가맹점 명"),
                     fieldWithPath("response.paymentList[].money").type(JsonFieldType.NUMBER).description("결제 금액"),
@@ -95,14 +95,16 @@ public class UserControllerTest extends ControllerTest {
                     fieldWithPath("response.paymentList[].createdAt").type(JsonFieldType.STRING).attributes(dateTimeFormat()).description("결제 생성 시각")
                 )
             ));
+
+        then(paymentService).should().getPaymentList(userId);
     }
 
     @DisplayName("결제 시도")
     @Test
     void postPaymentAttempt() throws Exception {
-        doNothing().when(paymentService).postPaymentAttempt(any(PostPaymentAttemptRequest.class));
-
         PostPaymentAttemptRequest request = new PostPaymentAttemptRequest(1L, 2L);
+
+        doNothing().when(paymentService).postPaymentAttempt(request);
 
         // when
         ResultActions resultActions = mockMvc.perform(
@@ -127,5 +129,7 @@ public class UserControllerTest extends ControllerTest {
                     fieldWithPath("rtMsg").type(JsonFieldType.STRING).description("결과 메세지")
                 )
             ));
+
+        then(paymentService).should().postPaymentAttempt(request);
     }
 }
