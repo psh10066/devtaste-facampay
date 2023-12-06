@@ -4,10 +4,9 @@ import com.devtaste.facampay.application.payment.dto.PaymentStoreDTO;
 import com.devtaste.facampay.application.payment.event.PaymentAttemptEvent;
 import com.devtaste.facampay.domain.model.payment.Payment;
 import com.devtaste.facampay.domain.model.payment.PaymentRepository;
-import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
 import com.devtaste.facampay.domain.model.payment.type.PaymentFailureType;
+import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
 import com.devtaste.facampay.domain.model.store.Store;
-import com.devtaste.facampay.domain.model.store.StoreRepository;
 import com.devtaste.facampay.domain.model.storeToUser.StoreToUser;
 import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.domain.model.user.User;
@@ -155,5 +154,29 @@ public class PaymentServiceTest {
         assertEquals(user.get().getMoney(), 5000L);
         then(paymentRepository).should().findById(request.getPaymentId());
         then(applicationEventPublisher).should().publishEvent(PaymentAttemptEvent.of(request.getPaymentId(), PaymentFailureType.SHORTAGE_OF_MONEY));
+    }
+
+    @DisplayName("결제 취소 - 상태값에 따른 취소 가능 여부 확인")
+    @Test
+    void cancelPayment() {
+        long storeId = 1;
+        long paymentId = 2;
+
+        Store store = Store.of(storeId, "store@facam.com", "가맹점1", 0L);
+        User user = User.of("user@facam.com", "사용자1", 5000L);
+
+        given(paymentRepository.findById(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.WAITING)));
+        paymentService.cancelPayment(storeId, paymentId);
+
+        given(paymentRepository.findById(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.SUCCESS)));
+        assertThrows(BadRequestApiException.class, () -> paymentService.cancelPayment(storeId, paymentId));
+
+        given(paymentRepository.findById(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.FAILURE)));
+        assertThrows(BadRequestApiException.class, () -> paymentService.cancelPayment(storeId, paymentId));
+
+        given(paymentRepository.findById(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.CANCELED)));
+        assertThrows(BadRequestApiException.class, () -> paymentService.cancelPayment(storeId, paymentId));
+
+        then(paymentRepository).should(times(4)).findById(paymentId);
     }
 }

@@ -50,6 +50,17 @@ public class Store extends AuditingFields {
         return new Store(storeEmail, storeName, money);
     }
 
+    private Store(Long storeId, String storeEmail, String storeName, Long money) {
+        this.storeId = storeId;
+        this.storeEmail = storeEmail;
+        this.storeName = storeName;
+        this.money = money;
+    }
+
+    public static Store of(Long storeId, String storeEmail, String storeName, Long money) {
+        return new Store(storeId, storeEmail, storeName, money);
+    }
+
     public void changeMoney(long money) {
         this.money += money;
     }
