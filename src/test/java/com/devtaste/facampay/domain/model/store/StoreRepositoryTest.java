@@ -1,6 +1,5 @@
 package com.devtaste.facampay.domain.model.store;
 
-import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.infrastructure.helper.RepositoryTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -15,16 +14,12 @@ public class StoreRepositoryTest extends RepositoryTest {
 
     @Autowired
     private StoreRepository storeRepository;
-    @Autowired
-    private StoreToUserRepository storeToUserRepository;
 
     private Store store;
 
     @BeforeAll
     void before() {
-        this.storeToUserRepository.deleteAllInBatch();
-        this.storeRepository.deleteAllInBatch();
-        this.store = this.storeRepository.save(Store.of("store@facam.com", "가맹점1", 0L));
+        this.store = storeRepository.findById(1L).orElseThrow();
     }
 
     @DisplayName("ID로 가맹점 조회")
@@ -34,14 +29,14 @@ public class StoreRepositoryTest extends RepositoryTest {
         assertTrue(store1.isPresent());
         assertEquals(this.store, store1.get());
 
-        Optional<Store> store2 = storeRepository.findById(this.store.getStoreId() + 1);
+        Optional<Store> store2 = storeRepository.findById(11L);
         assertTrue(store2.isEmpty());
     }
 
     @DisplayName("email로 가맹점 조회")
     @Test
     void findByStoreEmail() {
-        Optional<Store> store1 = storeRepository.findByStoreEmail("store@facam.com");
+        Optional<Store> store1 = storeRepository.findByStoreEmail(this.store.getStoreEmail());
         assertTrue(store1.isPresent());
         assertEquals(this.store, store1.get());
 

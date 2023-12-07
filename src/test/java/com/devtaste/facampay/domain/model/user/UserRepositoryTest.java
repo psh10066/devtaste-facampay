@@ -1,6 +1,5 @@
 package com.devtaste.facampay.domain.model.user;
 
-import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.infrastructure.helper.RepositoryTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -15,16 +14,12 @@ public class UserRepositoryTest extends RepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private StoreToUserRepository storeToUserRepository;
 
     private User user;
 
     @BeforeAll
     void before() {
-        this.storeToUserRepository.deleteAllInBatch();
-        this.userRepository.deleteAllInBatch();
-        this.user = this.userRepository.save(User.of("user@facam.com", "사용자1", 0L));
+        this.user = this.userRepository.findById(1L).orElseThrow();
     }
 
     @DisplayName("ID로 사용자 조회")
@@ -34,14 +29,14 @@ public class UserRepositoryTest extends RepositoryTest {
         assertTrue(user1.isPresent());
         assertEquals(this.user, user1.get());
 
-        Optional<User> user2 = userRepository.findById(this.user.getUserId() + 1);
+        Optional<User> user2 = userRepository.findById(11L);
         assertTrue(user2.isEmpty());
     }
 
     @DisplayName("email로 사용자 조회")
     @Test
     void findByUserEmail() {
-        Optional<User> user1 = userRepository.findByUserEmail("user@facam.com");
+        Optional<User> user1 = userRepository.findByUserEmail(this.user.getUserEmail());
         assertTrue(user1.isPresent());
         assertEquals(this.user, user1.get());
 

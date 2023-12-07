@@ -1,10 +1,13 @@
 spring:
+  sql.init.mode: always # schema.sql, data.sql 실행 여부
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/facampay
     username: root
     password: 12345678
   jpa:
+    open-in-view: false
+    defer-datasource-initialization: true # ddl-auto 이후 schema.sql, data.sql 실행
     hibernate:
       ddl-auto: create
     properties:
