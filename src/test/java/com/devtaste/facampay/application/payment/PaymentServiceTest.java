@@ -11,8 +11,8 @@ import com.devtaste.facampay.domain.model.storeToUser.StoreToUser;
 import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.domain.model.user.User;
 import com.devtaste.facampay.domain.model.user.UserRepository;
-import com.devtaste.facampay.infrastructure.exception.BadRequestApiException;
-import com.devtaste.facampay.infrastructure.exception.NotFoundDataException;
+import com.devtaste.facampay.infrastructure.exception.CustomException;
+import com.devtaste.facampay.infrastructure.exception.response.type.ErrorType;
 import com.devtaste.facampay.presentation.store.request.PostPaymentRequest;
 import com.devtaste.facampay.presentation.user.request.PostPaymentAttemptRequest;
 import org.junit.jupiter.api.DisplayName;
@@ -71,7 +71,9 @@ public class PaymentServiceTest {
 
         given(storeToUserRepository.findByStoreStoreIdAndUserUserId(request.getStoreId(), request.getUserId())).willReturn(Optional.empty());
 
-        assertThrows(NotFoundDataException.class, () -> paymentService.postPayment(request));
+        CustomException exception = assertThrows(CustomException.class, () -> paymentService.postPayment(request));
+
+        assertEquals(exception.getErrorType(), ErrorType.NOT_FOUND_STORE_TO_USER);
 
         then(storeToUserRepository).should().findByStoreStoreIdAndUserUserId(request.getStoreId(), request.getUserId());
         then(paymentRepository).should(never()).findByStore_StoreIdAndUser_UserIdAndPaymentStatus(anyLong(), anyLong(), any(PaymentStatusType.class));
@@ -88,7 +90,9 @@ public class PaymentServiceTest {
         given(storeToUserRepository.findByStoreStoreIdAndUserUserId(request.getStoreId(), request.getUserId())).willReturn(Optional.of(StoreToUser.of(store.get(), user.get())));
         given(paymentRepository.findByStore_StoreIdAndUser_UserIdAndPaymentStatus(request.getStoreId(), request.getUserId(), PaymentStatusType.WAITING)).willReturn(List.of(Payment.of(store.get(), user.get(), request.getMoney(), PaymentStatusType.WAITING)));
 
-        assertThrows(BadRequestApiException.class, () -> paymentService.postPayment(request));
+        CustomException exception = assertThrows(CustomException.class, () -> paymentService.postPayment(request));
+
+        assertEquals(exception.getErrorType(), ErrorType.EXIST_WAITING_PAYMENT);
 
         then(storeToUserRepository).should().findByStoreStoreIdAndUserUserId(request.getStoreId(), request.getUserId());
         then(paymentRepository).should().findByStore_StoreIdAndUser_UserIdAndPaymentStatus(request.getStoreId(), request.getUserId(), PaymentStatusType.WAITING);
@@ -156,7 +160,9 @@ public class PaymentServiceTest {
         willDoNothing().given(applicationEventPublisher).publishEvent(event);
         given(paymentRepository.findByPaymentId(request.getPaymentId())).willReturn(payment);
 
-        assertThrows(BadRequestApiException.class, () -> paymentService.postPaymentAttempt(request));
+        CustomException exception = assertThrows(CustomException.class, () -> paymentService.postPaymentAttempt(request));
+        assertEquals(exception.getErrorType(), ErrorType.SHORTAGE_OF_MONEY);
+
         paymentService.doPaymentAttemptEvent(event);
 
         assertEquals(store.get().getMoney(), 0L);
@@ -180,7 +186,8 @@ public class PaymentServiceTest {
         given(paymentRepository.findByPaymentId(request.getPaymentId())).willReturn(payment);
 
         paymentService.postPaymentAttempt(request);
-        assertThrows(BadRequestApiException.class, () -> paymentService.doPaymentAttemptEvent(event));
+        CustomException exception = assertThrows(CustomException.class, () -> paymentService.doPaymentAttemptEvent(event));
+        assertEquals(exception.getErrorType(), ErrorType.FINISHED_PAYMENT);
 
         assertEquals(store.get().getMoney(), 0L);
         assertEquals(user.get().getMoney(), 15000L);
@@ -197,18 +204,22 @@ public class PaymentServiceTest {
 
         Store store = Store.of(storeId, "store@facam.com", "가맹점1", 0L);
         User user = User.of("user@facam.com", "사용자1", 5000L);
+        CustomException exception;
 
         given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.WAITING)));
         paymentService.cancelPayment(storeId, paymentId);
 
         given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.SUCCESS)));
-        assertThrows(BadRequestApiException.class, () -> paymentService.cancelPayment(storeId, paymentId));
+        exception = assertThrows(CustomException.class, () -> paymentService.cancelPayment(storeId, paymentId));
+        assertEquals(exception.getErrorType(), ErrorType.NOT_CANCELABLE_PAYMENT);
 
         given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.FAILURE)));
-        assertThrows(BadRequestApiException.class, () -> paymentService.cancelPayment(storeId, paymentId));
+        exception = assertThrows(CustomException.class, () -> paymentService.cancelPayment(storeId, paymentId));
+        assertEquals(exception.getErrorType(), ErrorType.NOT_CANCELABLE_PAYMENT);
 
         given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.CANCELED)));
-        assertThrows(BadRequestApiException.class, () -> paymentService.cancelPayment(storeId, paymentId));
+        exception = assertThrows(CustomException.class, () -> paymentService.cancelPayment(storeId, paymentId));
+        assertEquals(exception.getErrorType(), ErrorType.NOT_CANCELABLE_PAYMENT);
 
         then(paymentRepository).should(times(4)).findByPaymentId(paymentId);
     }

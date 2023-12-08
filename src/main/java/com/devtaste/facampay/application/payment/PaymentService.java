@@ -10,8 +10,8 @@ import com.devtaste.facampay.domain.model.storeToUser.StoreToUser;
 import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.domain.model.user.User;
 import com.devtaste.facampay.domain.model.user.UserRepository;
-import com.devtaste.facampay.infrastructure.exception.BadRequestApiException;
-import com.devtaste.facampay.infrastructure.exception.NotFoundDataException;
+import com.devtaste.facampay.infrastructure.exception.CustomException;
+import com.devtaste.facampay.infrastructure.exception.response.type.ErrorType;
 import com.devtaste.facampay.presentation.store.request.PostPaymentRequest;
 import com.devtaste.facampay.presentation.user.request.PostPaymentAttemptRequest;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +38,9 @@ public class PaymentService {
      * 결제 요청
      */
     public void postPayment(PostPaymentRequest request) {
-        StoreToUser storeToUser = storeToUserRepository.findByStoreStoreIdAndUserUserId(request.getStoreId(), request.getUserId()).orElseThrow(() -> new NotFoundDataException("가입되지 않은 사용자입니다."));
+        StoreToUser storeToUser = storeToUserRepository.findByStoreStoreIdAndUserUserId(request.getStoreId(), request.getUserId()).orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_STORE_TO_USER));
         if (!paymentRepository.findByStore_StoreIdAndUser_UserIdAndPaymentStatus(request.getStoreId(), request.getUserId(), PaymentStatusType.WAITING).isEmpty()) {
-            throw new BadRequestApiException("해당 사용자에게 대기중인 결제 요청이 존재합니다.");
+            throw new CustomException(ErrorType.EXIST_WAITING_PAYMENT);
         }
 
         paymentRepository.save(Payment.of(storeToUser.getStore(), storeToUser.getUser(), request.getMoney(), PaymentStatusType.WAITING));
@@ -50,7 +50,7 @@ public class PaymentService {
      * 결제 목록 조회
      */
     public List<PaymentStoreDTO> getPaymentList(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundDataException("존재하지 않는 사용자입니다."));
+        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_USER));
         return paymentRepository.findByUserOrderByCreatedAtDesc(user).stream()
             .map(PaymentStoreDTO::from)
             .toList();
@@ -60,15 +60,15 @@ public class PaymentService {
      * 결제 시도
      */
     public void postPaymentAttempt(PostPaymentAttemptRequest request) {
-        Payment payment = paymentRepository.findById(request.getPaymentId()).orElseThrow(() -> new NotFoundDataException("존재하지 않는 결제 정보입니다."));
+        Payment payment = paymentRepository.findById(request.getPaymentId()).orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_PAYMENT));
         User user = payment.getUser();
 
-        if (!user.getUserId().equals(request.getUserId())) throw new BadRequestApiException("잘못된 요청입니다.");
+        if (!user.getUserId().equals(request.getUserId())) throw new CustomException(ErrorType.BAD_REQUEST);
 
         // 결제 실패
         if (user.getMoney() < payment.getMoney()) {
             applicationEventPublisher.publishEvent(PaymentAttemptEvent.of(request.getPaymentId(), PaymentFailureType.SHORTAGE_OF_MONEY));
-            throw new BadRequestApiException("잔액이 부족합니다.");
+            throw new CustomException(ErrorType.SHORTAGE_OF_MONEY);
         }
 
         // 결제 성공
@@ -78,8 +78,8 @@ public class PaymentService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @EventListener
     public void doPaymentAttemptEvent(PaymentAttemptEvent event) {
-        Payment payment = paymentRepository.findByPaymentId(event.paymentId()).orElseThrow(() -> new NotFoundDataException("존재하지 않는 결제 정보입니다."));
-        if (!payment.getPaymentStatus().isPayable()) throw new BadRequestApiException("종료된 결제 요청입니다.");
+        Payment payment = paymentRepository.findByPaymentId(event.paymentId()).orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_PAYMENT));
+        if (!payment.getPaymentStatus().isPayable()) throw new CustomException(ErrorType.FINISHED_PAYMENT);
 
         payment.doPaymentAttempt(event.paymentFailureType());
 
@@ -93,10 +93,11 @@ public class PaymentService {
      * 결제 취소
      */
     public void cancelPayment(Long storeId, Long paymentId) {
-        Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(() -> new NotFoundDataException("존재하지 않는 결제 정보입니다."));
-        if (!payment.getStore().getStoreId().equals(storeId)) throw new BadRequestApiException("잘못된 요청입니다.");
+        Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_PAYMENT));
+        if (!payment.getStore().getStoreId().equals(storeId)) throw new CustomException(ErrorType.BAD_REQUEST);
 
-        if (!payment.getPaymentStatus().equals(PaymentStatusType.WAITING)) throw new BadRequestApiException("대기중인 결제만 취소할 수 있습니다.");
+        if (!payment.getPaymentStatus().equals(PaymentStatusType.WAITING))
+            throw new CustomException(ErrorType.NOT_CANCELABLE_PAYMENT);
 
         payment.cancelPayment();
     }

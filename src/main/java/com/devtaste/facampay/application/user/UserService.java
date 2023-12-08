@@ -5,9 +5,9 @@ import com.devtaste.facampay.application.user.dto.UserDTO;
 import com.devtaste.facampay.domain.model.payment.PaymentRepository;
 import com.devtaste.facampay.domain.model.storeToUser.StoreToUser;
 import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
-import com.devtaste.facampay.domain.model.user.User;
 import com.devtaste.facampay.domain.model.user.UserRepository;
-import com.devtaste.facampay.infrastructure.exception.NotFoundDataException;
+import com.devtaste.facampay.infrastructure.exception.CustomException;
+import com.devtaste.facampay.infrastructure.exception.response.type.ErrorType;
 import com.devtaste.facampay.presentation.user.request.UserListRequest;
 import com.devtaste.facampay.presentation.user.response.UserPaymentListResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class UserService {
     }
 
     public UserPaymentListResponse getPaymentUser(Long storeId, Long userId) {
-        StoreToUser storeToUser = storeToUserRepository.findByStore_StoreIdAndUser_UserId(storeId, userId).orElseThrow(() -> new NotFoundDataException("가입되지 않은 사용자입니다."));
+        StoreToUser storeToUser = storeToUserRepository.findByStore_StoreIdAndUser_UserId(storeId, userId).orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_STORE_TO_USER));
 
         List<PaymentDTO> paymentList = paymentRepository.findByStore_StoreIdAndUser_UserIdOrderByCreatedAtDesc(storeId, userId).stream()
             .map(PaymentDTO::from)
