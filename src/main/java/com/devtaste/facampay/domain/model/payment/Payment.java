@@ -27,12 +27,12 @@ public class Payment extends AuditingFields {
     private Long paymentId;
 
     @Comment("가맹점 고유번호")
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "storeId", foreignKey = @ForeignKey(name = "payment_store_fk"), updatable = false)
     private Store store;
 
     @Comment("사용자 고유번호")
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", foreignKey = @ForeignKey(name = "payment_user_fk"), updatable = false)
     private User user;
 

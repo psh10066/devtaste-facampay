@@ -6,6 +6,7 @@ import com.devtaste.facampay.domain.model.payment.Payment;
 import com.devtaste.facampay.domain.model.payment.PaymentRepository;
 import com.devtaste.facampay.domain.model.payment.type.PaymentFailureType;
 import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
+import com.devtaste.facampay.domain.model.store.StoreRepository;
 import com.devtaste.facampay.domain.model.storeToUser.StoreToUser;
 import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.domain.model.user.User;
@@ -29,6 +30,7 @@ import java.util.List;
 public class PaymentService {
 
     private final UserRepository userRepository;
+    private final StoreRepository storeRepository;
     private final PaymentRepository paymentRepository;
     private final StoreToUserRepository storeToUserRepository;
 
@@ -84,8 +86,8 @@ public class PaymentService {
         payment.doPaymentAttempt(event.paymentFailureType());
 
         if (event.paymentFailureType() == null) {
-            payment.getStore().changeMoney(payment.getMoney());
-            payment.getUser().changeMoney(-payment.getMoney());
+            storeRepository.findByStoreId(payment.getStore().getStoreId()).get().changeMoney(payment.getMoney());
+            userRepository.findByUserId(payment.getUser().getUserId()).get().changeMoney(-payment.getMoney());
         }
     }
 

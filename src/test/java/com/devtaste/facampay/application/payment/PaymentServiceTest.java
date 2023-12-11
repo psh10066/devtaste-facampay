@@ -7,6 +7,7 @@ import com.devtaste.facampay.domain.model.payment.PaymentRepository;
 import com.devtaste.facampay.domain.model.payment.type.PaymentFailureType;
 import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
 import com.devtaste.facampay.domain.model.store.Store;
+import com.devtaste.facampay.domain.model.store.StoreRepository;
 import com.devtaste.facampay.domain.model.storeToUser.StoreToUser;
 import com.devtaste.facampay.domain.model.storeToUser.StoreToUserRepository;
 import com.devtaste.facampay.domain.model.user.User;
@@ -39,6 +40,8 @@ public class PaymentServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private StoreRepository storeRepository;
     @Mock
     private PaymentRepository paymentRepository;
     @Mock
@@ -128,7 +131,7 @@ public class PaymentServiceTest {
     @Test
     void postPaymentAttempt_success() {
         PostPaymentAttemptRequest request = new PostPaymentAttemptRequest(1L, 2L);
-        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", 0L));
+        Optional<Store> store = Optional.of(Store.of(3L, "store@facam.com", "가맹점1", 0L));
         Optional<User> user = Optional.of(User.of(request.getUserId(), "user@facam.com", "사용자1", 25000L));
         Optional<Payment> payment = Optional.of(Payment.of(store.get(), user.get(), 10000L, PaymentStatusType.WAITING));
         PaymentAttemptEvent event = PaymentAttemptEvent.of(request.getPaymentId(), null);
@@ -136,6 +139,8 @@ public class PaymentServiceTest {
         given(paymentRepository.findById(request.getPaymentId())).willReturn(payment);
         willDoNothing().given(applicationEventPublisher).publishEvent(event);
         given(paymentRepository.findByPaymentId(request.getPaymentId())).willReturn(payment);
+        given(storeRepository.findByStoreId(payment.get().getStore().getStoreId())).willReturn(store);
+        given(userRepository.findByUserId(payment.get().getUser().getUserId())).willReturn(user);
 
         paymentService.postPaymentAttempt(request);
         paymentService.doPaymentAttemptEvent(event);
@@ -145,13 +150,15 @@ public class PaymentServiceTest {
         then(paymentRepository).should().findById(request.getPaymentId());
         then(applicationEventPublisher).should().publishEvent(event);
         then(paymentRepository).should().findByPaymentId(request.getPaymentId());
+        then(storeRepository).should().findByStoreId(payment.get().getStore().getStoreId());
+        then(userRepository).should().findByUserId(payment.get().getUser().getUserId());
     }
 
     @DisplayName("결제 시도 - 금액 부족")
     @Test
     void postPaymentAttempt_SHORTAGE_OF_MONEY() {
         PostPaymentAttemptRequest request = new PostPaymentAttemptRequest(1L, 2L);
-        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", 0L));
+        Optional<Store> store = Optional.of(Store.of(3L, "store@facam.com", "가맹점1", 0L));
         Optional<User> user = Optional.of(User.of(request.getUserId(), "user@facam.com", "사용자1", 5000L));
         Optional<Payment> payment = Optional.of(Payment.of(store.get(), user.get(), 10000L, PaymentStatusType.WAITING));
         PaymentAttemptEvent event = PaymentAttemptEvent.of(request.getPaymentId(), PaymentFailureType.SHORTAGE_OF_MONEY);
@@ -170,13 +177,15 @@ public class PaymentServiceTest {
         then(paymentRepository).should().findById(request.getPaymentId());
         then(applicationEventPublisher).should().publishEvent(event);
         then(paymentRepository).should().findByPaymentId(request.getPaymentId());
+        then(storeRepository).should(never()).findByStoreId(anyLong());
+        then(userRepository).should(never()).findByUserId(anyLong());
     }
 
     @DisplayName("결제 시도 - 이미 완료된 결제")
     @Test
     void postPaymentAttempt_finished() {
         PostPaymentAttemptRequest request = new PostPaymentAttemptRequest(1L, 2L);
-        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", 0L));
+        Optional<Store> store = Optional.of(Store.of(3L, "store@facam.com", "가맹점1", 0L));
         Optional<User> user = Optional.of(User.of(request.getUserId(), "user@facam.com", "사용자1", 15000L));
         Optional<Payment> payment = Optional.of(Payment.of(store.get(), user.get(), 10000L, PaymentStatusType.SUCCESS));
         PaymentAttemptEvent event = PaymentAttemptEvent.of(request.getPaymentId(), null);
@@ -194,6 +203,8 @@ public class PaymentServiceTest {
         then(paymentRepository).should().findById(request.getPaymentId());
         then(applicationEventPublisher).should().publishEvent(event);
         then(paymentRepository).should().findByPaymentId(request.getPaymentId());
+        then(storeRepository).should(never()).findByStoreId(anyLong());
+        then(userRepository).should(never()).findByUserId(anyLong());
     }
 
     @DisplayName("결제 취소 - 상태값에 따른 취소 가능 여부 확인")
