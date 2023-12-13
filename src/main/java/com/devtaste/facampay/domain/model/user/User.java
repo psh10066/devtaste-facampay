@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.Comment;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Comment("사용자")
@@ -38,31 +39,31 @@ public class User extends AuditingFields {
 
     @Comment("잔고")
     @Column(nullable = false)
-    private Long money;
+    private BigDecimal money;
 
-    private User(String userEmail, String userName, Long money) {
+    private User(String userEmail, String userName, BigDecimal money) {
         this.userEmail = userEmail;
         this.userName = userName;
         this.money = money;
     }
 
-    public static User of(String userEmail, String userName, Long money) {
+    public static User of(String userEmail, String userName, BigDecimal money) {
         return new User(userEmail, userName, money);
     }
 
-    private User(Long userId, String userEmail, String userName, Long money) {
+    private User(Long userId, String userEmail, String userName, BigDecimal money) {
         this.userId = userId;
         this.userEmail = userEmail;
         this.userName = userName;
         this.money = money;
     }
 
-    public static User of(Long userId, String userEmail, String userName, Long money) {
+    public static User of(Long userId, String userEmail, String userName, BigDecimal money) {
         return new User(userId, userEmail, userName, money);
     }
 
-    public void changeMoney(long money) {
-        this.money += money;
+    public void changeMoney(BigDecimal money) {
+        this.money = this.money.add(money);
     }
 
     @Override

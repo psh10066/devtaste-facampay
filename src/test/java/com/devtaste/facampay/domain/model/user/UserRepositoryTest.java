@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,7 +50,7 @@ public class UserRepositoryTest extends RepositoryTest {
     void save() {
         long beforeCount = userRepository.count();
 
-        User user1 = userRepository.save(User.of("insert@facam.com", "신규사용자", 10000L));
+        User user1 = userRepository.save(User.of("insert@facam.com", "신규사용자", new BigDecimal(10000)));
 
         long afterCount = userRepository.count();
 

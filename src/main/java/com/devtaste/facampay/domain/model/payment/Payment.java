@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.Comment;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Comment("결제")
@@ -37,8 +38,8 @@ public class Payment extends AuditingFields {
     private User user;
 
     @Comment("결제 금액")
-    @Column(nullable = false)
-    private Long money;
+    @Column(nullable = false, scale = 4, precision = 19)
+    private BigDecimal money;
 
     @Comment("결제 상태")
     @Column(nullable = false)
@@ -49,18 +50,18 @@ public class Payment extends AuditingFields {
     @Enumerated(EnumType.STRING)
     private PaymentFailureType paymentFailureType;
 
-    private Payment(Store store, User user, Long money, PaymentStatusType paymentStatus) {
+    private Payment(Store store, User user, BigDecimal money, PaymentStatusType paymentStatus) {
         this.store = store;
         this.user = user;
         this.money = money;
         this.paymentStatus = paymentStatus;
     }
 
-    public static Payment of(Store store, User user, Long money, PaymentStatusType paymentStatus) {
+    public static Payment of(Store store, User user, BigDecimal money, PaymentStatusType paymentStatus) {
         return new Payment(store, user, money, paymentStatus);
     }
 
-    private Payment(Long paymentId, Store store, User user, Long money, PaymentStatusType paymentStatus) {
+    private Payment(Long paymentId, Store store, User user, BigDecimal money, PaymentStatusType paymentStatus) {
         this.paymentId = paymentId;
         this.store = store;
         this.user = user;
@@ -68,7 +69,7 @@ public class Payment extends AuditingFields {
         this.paymentStatus = paymentStatus;
     }
 
-    public static Payment of(Long paymentId, Store store, User user, Long money, PaymentStatusType paymentStatus) {
+    public static Payment of(Long paymentId, Store store, User user, BigDecimal money, PaymentStatusType paymentStatus) {
         return new Payment(paymentId, store, user, money, paymentStatus);
     }
 

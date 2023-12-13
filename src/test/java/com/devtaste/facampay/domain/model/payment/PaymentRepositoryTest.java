@@ -11,6 +11,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -37,7 +39,7 @@ public class PaymentRepositoryTest extends RepositoryTest {
     void save() {
         long beforeCount = paymentRepository.count();
 
-        Payment payment = paymentRepository.save(Payment.of(this.store, this.user, 10000L, PaymentStatusType.WAITING));
+        Payment payment = paymentRepository.save(Payment.of(this.store, this.user, new BigDecimal(10000), PaymentStatusType.WAITING));
 
         long afterCount = paymentRepository.count();
 

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.Comment;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Comment("가맹점")
@@ -38,31 +39,31 @@ public class Store extends AuditingFields {
 
     @Comment("잔고")
     @Column(nullable = false)
-    private Long money;
+    private BigDecimal money;
 
-    private Store(String storeEmail, String storeName, Long money) {
+    private Store(String storeEmail, String storeName, BigDecimal money) {
         this.storeEmail = storeEmail;
         this.storeName = storeName;
         this.money = money;
     }
 
-    public static Store of(String storeEmail, String storeName, Long money) {
+    public static Store of(String storeEmail, String storeName, BigDecimal money) {
         return new Store(storeEmail, storeName, money);
     }
 
-    private Store(Long storeId, String storeEmail, String storeName, Long money) {
+    private Store(Long storeId, String storeEmail, String storeName, BigDecimal money) {
         this.storeId = storeId;
         this.storeEmail = storeEmail;
         this.storeName = storeName;
         this.money = money;
     }
 
-    public static Store of(Long storeId, String storeEmail, String storeName, Long money) {
+    public static Store of(Long storeId, String storeEmail, String storeName, BigDecimal money) {
         return new Store(storeId, storeEmail, storeName, money);
     }
 
-    public void changeMoney(long money) {
-        this.money += money;
+    public void changeMoney(BigDecimal money) {
+        this.money = this.money.add(money);
     }
 
     @Override

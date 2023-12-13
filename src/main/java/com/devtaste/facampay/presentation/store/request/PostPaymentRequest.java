@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,5 +23,5 @@ public class PostPaymentRequest {
 
     @NotNull(message = "금액을 입력해 주세요.")
     @Min(value = 1, message = "1원부터 결제할 수 있습니다.")
-    private Long money;
+    private BigDecimal money;
 }

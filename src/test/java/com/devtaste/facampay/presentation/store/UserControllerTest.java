@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -63,8 +64,8 @@ public class UserControllerTest extends ControllerTest {
     void getPaymentList() throws Exception {
         long userId = 1;
         given(paymentService.getPaymentList(any(Long.class))).willReturn(List.of(
-            PaymentStoreDTO.of(2L, "가맹점2", 5000L, PaymentStatusType.SUCCESS, LocalDateTime.of(2023, 12, 4, 18, 12, 3, 654321)),
-            PaymentStoreDTO.of(1L, "가맹점1", 10000L, PaymentStatusType.WAITING, LocalDateTime.of(2023, 12, 3, 21, 47, 8, 123456))
+            PaymentStoreDTO.of(2L, "가맹점2", new BigDecimal(5000), PaymentStatusType.SUCCESS, LocalDateTime.of(2023, 12, 4, 18, 12, 3, 654321)),
+            PaymentStoreDTO.of(1L, "가맹점1", new BigDecimal(10000), PaymentStatusType.WAITING, LocalDateTime.of(2023, 12, 3, 21, 47, 8, 123456))
         ));
 
         // when

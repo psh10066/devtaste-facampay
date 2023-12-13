@@ -2,7 +2,6 @@ package com.devtaste.facampay.presentation.store;
 
 import com.devtaste.facampay.application.payment.PaymentService;
 import com.devtaste.facampay.application.payment.dto.PaymentDTO;
-import com.devtaste.facampay.application.payment.dto.PaymentStoreDTO;
 import com.devtaste.facampay.application.user.UserService;
 import com.devtaste.facampay.application.user.dto.UserDTO;
 import com.devtaste.facampay.domain.model.payment.type.PaymentStatusType;
@@ -26,6 +25,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,8 +33,6 @@ import static com.devtaste.facampay.presentation.common.ApiDocumentUtils.getDocu
 import static com.devtaste.facampay.presentation.common.ApiDocumentUtils.getDocumentResponse;
 import static com.devtaste.facampay.presentation.common.DocumentAttributeGenerator.dateTimeFormat;
 import static com.devtaste.facampay.presentation.common.DocumentAttributeGenerator.paymentStatusFormat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doNothing;
@@ -118,8 +116,8 @@ public class StoreControllerTest extends ControllerTest {
         given(userService.getPaymentUser(storeId, userId)).willReturn(UserPaymentListResponse.of(
             UserDTO.of(1L, "사용자1", "user@facam.com"),
             List.of(
-                PaymentDTO.of(2L, 10000L, PaymentStatusType.WAITING, LocalDateTime.of(2023, 12, 6, 12, 34, 56)),
-                PaymentDTO.of(1L, 20000L, PaymentStatusType.SUCCESS, LocalDateTime.of(2023, 11, 23, 12, 34, 56))
+                PaymentDTO.of(2L, new BigDecimal(10000), PaymentStatusType.WAITING, LocalDateTime.of(2023, 12, 6, 12, 34, 56)),
+                PaymentDTO.of(1L, new BigDecimal(20000), PaymentStatusType.SUCCESS, LocalDateTime.of(2023, 11, 23, 12, 34, 56))
             )
         ));
 
@@ -162,7 +160,7 @@ public class StoreControllerTest extends ControllerTest {
     @DisplayName("결제 요청")
     @Test
     void postPayment() throws Exception {
-        PostPaymentRequest request = new PostPaymentRequest(1L, 2L, 10000L);
+        PostPaymentRequest request = new PostPaymentRequest(1L, 2L, new BigDecimal(10000));
         doNothing().when(paymentService).postPayment(request);
 
         // when

@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,13 +58,13 @@ public class UserServiceTest {
     public void getPaymentUser() {
         long storeId = 1;
         long userId = 2;
-        Store store = Store.of("store@facam.com", "가맹점1", 0L);
-        User user = User.of("user@facam.com", "사용자1", 25000L);
+        Store store = Store.of("store@facam.com", "가맹점1", new BigDecimal(0));
+        User user = User.of("user@facam.com", "사용자1", new BigDecimal(25000));
 
         given(storeToUserRepository.findByStore_StoreIdAndUser_UserId(storeId, userId)).willReturn(Optional.of(StoreToUser.of(store, user)));
         given(paymentRepository.findByStore_StoreIdAndUser_UserIdOrderByCreatedAtDesc(storeId, userId)).willReturn(List.of(
-            Payment.of(store, user, 10000L, PaymentStatusType.WAITING),
-            Payment.of(store, user, 20000L, PaymentStatusType.SUCCESS)
+            Payment.of(store, user, new BigDecimal(10000), PaymentStatusType.WAITING),
+            Payment.of(store, user, new BigDecimal(20000), PaymentStatusType.SUCCESS)
         ));
 
         userService.getPaymentUser(storeId, userId);

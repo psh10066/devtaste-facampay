@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,9 +53,9 @@ public class PaymentServiceTest {
     @DisplayName("결제 요청 - 성공")
     @Test
     void postPayment_success() {
-        PostPaymentRequest request = new PostPaymentRequest(1L, 2L, 10000L);
-        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", 0L));
-        Optional<User> user = Optional.of(User.of("user@facam.com", "사용자1", 25000L));
+        PostPaymentRequest request = new PostPaymentRequest(1L, 2L, new BigDecimal(10000));
+        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", new BigDecimal(0)));
+        Optional<User> user = Optional.of(User.of("user@facam.com", "사용자1", new BigDecimal(25000)));
 
         given(storeToUserRepository.findByStoreStoreIdAndUserUserId(request.getStoreId(), request.getUserId())).willReturn(Optional.of(StoreToUser.of(store.get(), user.get())));
         given(paymentRepository.findByStore_StoreIdAndUser_UserIdAndPaymentStatus(request.getStoreId(), request.getUserId(), PaymentStatusType.WAITING)).willReturn(List.of());
@@ -70,7 +71,7 @@ public class PaymentServiceTest {
     @DisplayName("결제 요청 - 등록된 회원에 한해 결제 요청을 보낼 수 있음")
     @Test
     void postPayment_onlyRegisteredUser() {
-        PostPaymentRequest request = new PostPaymentRequest(1L, 2L, 10000L);
+        PostPaymentRequest request = new PostPaymentRequest(1L, 2L, new BigDecimal(10000));
 
         given(storeToUserRepository.findByStoreStoreIdAndUserUserId(request.getStoreId(), request.getUserId())).willReturn(Optional.empty());
 
@@ -86,9 +87,9 @@ public class PaymentServiceTest {
     @DisplayName("결제 요청 - 대기 건은 하나만 존재할 수 있음")
     @Test
     void postPayment_onlyOnePaymentWaiting() {
-        PostPaymentRequest request = new PostPaymentRequest(1L, 2L, 10000L);
-        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", 0L));
-        Optional<User> user = Optional.of(User.of("user@facam.com", "사용자1", 25000L));
+        PostPaymentRequest request = new PostPaymentRequest(1L, 2L, new BigDecimal(10000));
+        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", new BigDecimal(0)));
+        Optional<User> user = Optional.of(User.of("user@facam.com", "사용자1", new BigDecimal(25000)));
 
         given(storeToUserRepository.findByStoreStoreIdAndUserUserId(request.getStoreId(), request.getUserId())).willReturn(Optional.of(StoreToUser.of(store.get(), user.get())));
         given(paymentRepository.findByStore_StoreIdAndUser_UserIdAndPaymentStatus(request.getStoreId(), request.getUserId(), PaymentStatusType.WAITING)).willReturn(List.of(Payment.of(store.get(), user.get(), request.getMoney(), PaymentStatusType.WAITING)));
@@ -106,22 +107,22 @@ public class PaymentServiceTest {
     @Test
     void getPaymentList() {
         long userId = 1L;
-        Optional<User> user = Optional.of(User.of(userId, "user@facam.com", "사용자1", 25000L));
+        Optional<User> user = Optional.of(User.of(userId, "user@facam.com", "사용자1", new BigDecimal(25000)));
         given(userRepository.findById(userId)).willReturn(user);
         given(paymentRepository.findByUserOrderByCreatedAtDesc(user.get())).willReturn(List.of(
-            Payment.of(1L, Store.of("store1@facam.com", "가맹점1", 0L), user.get(), 10000L, PaymentStatusType.WAITING),
-            Payment.of(2L, Store.of("store2@facam.com", "가맹점2", 0L), user.get(), 5000L, PaymentStatusType.SUCCESS)
+            Payment.of(1L, Store.of("store1@facam.com", "가맹점1", new BigDecimal(0)), user.get(), new BigDecimal(10000), PaymentStatusType.WAITING),
+            Payment.of(2L, Store.of("store2@facam.com", "가맹점2", new BigDecimal(0)), user.get(), new BigDecimal(5000), PaymentStatusType.SUCCESS)
         ));
 
         List<PaymentStoreDTO> paymentList = paymentService.getPaymentList(userId);
 
         assertEquals(paymentList.get(0).paymentId(), 1L);
         assertEquals(paymentList.get(0).storeName(), "가맹점1");
-        assertEquals(paymentList.get(0).money(), 10000L);
+        assertEquals(paymentList.get(0).money(), new BigDecimal(10000));
         assertEquals(paymentList.get(0).paymentStatus(), PaymentStatusType.WAITING);
         assertEquals(paymentList.get(1).paymentId(), 2L);
         assertEquals(paymentList.get(1).storeName(), "가맹점2");
-        assertEquals(paymentList.get(1).money(), 5000L);
+        assertEquals(paymentList.get(1).money(), new BigDecimal(5000));
         assertEquals(paymentList.get(1).paymentStatus(), PaymentStatusType.SUCCESS);
         then(userRepository).should().findById(userId);
         then(paymentRepository).should().findByUserOrderByCreatedAtDesc(user.get());
@@ -131,9 +132,9 @@ public class PaymentServiceTest {
     @Test
     void postPaymentAttempt_success() {
         PostPaymentAttemptRequest request = new PostPaymentAttemptRequest(1L, 2L);
-        Optional<Store> store = Optional.of(Store.of(3L, "store@facam.com", "가맹점1", 0L));
-        Optional<User> user = Optional.of(User.of(request.getUserId(), "user@facam.com", "사용자1", 25000L));
-        Optional<Payment> payment = Optional.of(Payment.of(store.get(), user.get(), 10000L, PaymentStatusType.WAITING));
+        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", new BigDecimal(0)));
+        Optional<User> user = Optional.of(User.of(request.getUserId(), "user@facam.com", "사용자1", new BigDecimal(25000L)));
+        Optional<Payment> payment = Optional.of(Payment.of(store.get(), user.get(), new BigDecimal(10000), PaymentStatusType.WAITING));
         PaymentAttemptEvent event = PaymentAttemptEvent.of(request.getPaymentId(), null);
 
         given(paymentRepository.findById(request.getPaymentId())).willReturn(payment);
@@ -145,8 +146,8 @@ public class PaymentServiceTest {
         paymentService.postPaymentAttempt(request);
         paymentService.doPaymentAttemptEvent(event);
 
-        assertEquals(store.get().getMoney(), 10000L);
-        assertEquals(user.get().getMoney(), 15000L);
+        assertEquals(store.get().getMoney(), new BigDecimal(10000));
+        assertEquals(user.get().getMoney(), new BigDecimal(15000));
         then(paymentRepository).should().findById(request.getPaymentId());
         then(applicationEventPublisher).should().publishEvent(event);
         then(paymentRepository).should().findByPaymentId(request.getPaymentId());
@@ -158,9 +159,9 @@ public class PaymentServiceTest {
     @Test
     void postPaymentAttempt_SHORTAGE_OF_MONEY() {
         PostPaymentAttemptRequest request = new PostPaymentAttemptRequest(1L, 2L);
-        Optional<Store> store = Optional.of(Store.of(3L, "store@facam.com", "가맹점1", 0L));
-        Optional<User> user = Optional.of(User.of(request.getUserId(), "user@facam.com", "사용자1", 5000L));
-        Optional<Payment> payment = Optional.of(Payment.of(store.get(), user.get(), 10000L, PaymentStatusType.WAITING));
+        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", new BigDecimal(0)));
+        Optional<User> user = Optional.of(User.of(request.getUserId(), "user@facam.com", "사용자1", new BigDecimal(5000)));
+        Optional<Payment> payment = Optional.of(Payment.of(store.get(), user.get(), new BigDecimal(10000), PaymentStatusType.WAITING));
         PaymentAttemptEvent event = PaymentAttemptEvent.of(request.getPaymentId(), PaymentFailureType.SHORTAGE_OF_MONEY);
 
         given(paymentRepository.findById(request.getPaymentId())).willReturn(payment);
@@ -172,8 +173,8 @@ public class PaymentServiceTest {
 
         paymentService.doPaymentAttemptEvent(event);
 
-        assertEquals(store.get().getMoney(), 0L);
-        assertEquals(user.get().getMoney(), 5000L);
+        assertEquals(store.get().getMoney(), new BigDecimal(0));
+        assertEquals(user.get().getMoney(), new BigDecimal(5000));
         then(paymentRepository).should().findById(request.getPaymentId());
         then(applicationEventPublisher).should().publishEvent(event);
         then(paymentRepository).should().findByPaymentId(request.getPaymentId());
@@ -185,9 +186,9 @@ public class PaymentServiceTest {
     @Test
     void postPaymentAttempt_finished() {
         PostPaymentAttemptRequest request = new PostPaymentAttemptRequest(1L, 2L);
-        Optional<Store> store = Optional.of(Store.of(3L, "store@facam.com", "가맹점1", 0L));
-        Optional<User> user = Optional.of(User.of(request.getUserId(), "user@facam.com", "사용자1", 15000L));
-        Optional<Payment> payment = Optional.of(Payment.of(store.get(), user.get(), 10000L, PaymentStatusType.SUCCESS));
+        Optional<Store> store = Optional.of(Store.of("store@facam.com", "가맹점1", new BigDecimal(0)));
+        Optional<User> user = Optional.of(User.of(request.getUserId(), "user@facam.com", "사용자1", new BigDecimal(15000)));
+        Optional<Payment> payment = Optional.of(Payment.of(store.get(), user.get(), new BigDecimal(10000), PaymentStatusType.SUCCESS));
         PaymentAttemptEvent event = PaymentAttemptEvent.of(request.getPaymentId(), null);
 
         given(paymentRepository.findById(request.getPaymentId())).willReturn(payment);
@@ -198,8 +199,8 @@ public class PaymentServiceTest {
         CustomException exception = assertThrows(CustomException.class, () -> paymentService.doPaymentAttemptEvent(event));
         assertEquals(exception.getErrorType(), ErrorType.FINISHED_PAYMENT);
 
-        assertEquals(store.get().getMoney(), 0L);
-        assertEquals(user.get().getMoney(), 15000L);
+        assertEquals(store.get().getMoney(), new BigDecimal(0));
+        assertEquals(user.get().getMoney(), new BigDecimal(15000));
         then(paymentRepository).should().findById(request.getPaymentId());
         then(applicationEventPublisher).should().publishEvent(event);
         then(paymentRepository).should().findByPaymentId(request.getPaymentId());
@@ -213,22 +214,22 @@ public class PaymentServiceTest {
         long storeId = 1;
         long paymentId = 2;
 
-        Store store = Store.of(storeId, "store@facam.com", "가맹점1", 0L);
-        User user = User.of("user@facam.com", "사용자1", 5000L);
+        Store store = Store.of(storeId, "store@facam.com", "가맹점1", new BigDecimal(0));
+        User user = User.of("user@facam.com", "사용자1", new BigDecimal(5000));
         CustomException exception;
 
-        given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.WAITING)));
+        given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, new BigDecimal(10000), PaymentStatusType.WAITING)));
         paymentService.cancelPayment(storeId, paymentId);
 
-        given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.SUCCESS)));
+        given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, new BigDecimal(10000), PaymentStatusType.SUCCESS)));
         exception = assertThrows(CustomException.class, () -> paymentService.cancelPayment(storeId, paymentId));
         assertEquals(exception.getErrorType(), ErrorType.NOT_CANCELABLE_PAYMENT);
 
-        given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.FAILURE)));
+        given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, new BigDecimal(10000), PaymentStatusType.FAILURE)));
         exception = assertThrows(CustomException.class, () -> paymentService.cancelPayment(storeId, paymentId));
         assertEquals(exception.getErrorType(), ErrorType.NOT_CANCELABLE_PAYMENT);
 
-        given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, 10000L, PaymentStatusType.CANCELED)));
+        given(paymentRepository.findByPaymentId(paymentId)).willReturn(Optional.of(Payment.of(store, user, new BigDecimal(10000), PaymentStatusType.CANCELED)));
         exception = assertThrows(CustomException.class, () -> paymentService.cancelPayment(storeId, paymentId));
         assertEquals(exception.getErrorType(), ErrorType.NOT_CANCELABLE_PAYMENT);
 

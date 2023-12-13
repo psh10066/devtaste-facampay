@@ -68,7 +68,7 @@ public class PaymentService {
         if (!user.getUserId().equals(request.getUserId())) throw new CustomException(ErrorType.BAD_REQUEST);
 
         // 결제 실패
-        if (user.getMoney() < payment.getMoney()) {
+        if (user.getMoney().compareTo(payment.getMoney()) < 0) {
             applicationEventPublisher.publishEvent(PaymentAttemptEvent.of(request.getPaymentId(), PaymentFailureType.SHORTAGE_OF_MONEY));
             throw new CustomException(ErrorType.SHORTAGE_OF_MONEY);
         }
@@ -87,7 +87,7 @@ public class PaymentService {
 
         if (event.paymentFailureType() == null) {
             storeRepository.findByStoreId(payment.getStore().getStoreId()).get().changeMoney(payment.getMoney());
-            userRepository.findByUserId(payment.getUser().getUserId()).get().changeMoney(-payment.getMoney());
+            userRepository.findByUserId(payment.getUser().getUserId()).get().changeMoney(payment.getMoney().negate());
         }
     }
 
